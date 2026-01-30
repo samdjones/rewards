@@ -1,0 +1,13 @@
+{
+  "name": "kids-reward-tracker",
+  "version": "1.0.0",
+  "description": "Kids Reward Tracking Application",
+  "scripts": {
+    "server": "cd server && npm start",
+    "client": "cd client && npm run dev",
+    "dev": "echo 'Start server in one terminal: npm run server' && echo 'Start client in another terminal: npm run client'"
+  },
+  "keywords": ["rewards", "kids", "parenting", "tracking"],
+  "author": "",
+  "license": "MIT"
+}
