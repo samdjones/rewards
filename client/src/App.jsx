@@ -1,14 +1,17 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import Dashboard from './pages/Dashboard';
-import TasksPage from './pages/TasksPage';
-import RewardsPage from './pages/RewardsPage';
-import ChildDetailPage from './pages/ChildDetailPage';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import FamilyGuard from "./components/FamilyGuard";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import FamilySetupPage from "./pages/FamilySetupPage";
+import FamilySettingsPage from "./pages/FamilySettingsPage";
+import Dashboard from "./pages/Dashboard";
+import TasksPage from "./pages/TasksPage";
+import RewardsPage from "./pages/RewardsPage";
+import ChildDetailPage from "./pages/ChildDetailPage";
 
 function App() {
   return (
@@ -19,35 +22,51 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route
-              path="/"
+              path="/family/setup"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <FamilySetupPage />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/family/settings"
+              element={
+                <FamilyGuard>
+                  <FamilySettingsPage />
+                </FamilyGuard>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <FamilyGuard>
+                  <Dashboard />
+                </FamilyGuard>
               }
             />
             <Route
               path="/tasks"
               element={
-                <ProtectedRoute>
+                <FamilyGuard>
                   <TasksPage />
-                </ProtectedRoute>
+                </FamilyGuard>
               }
             />
             <Route
               path="/rewards"
               element={
-                <ProtectedRoute>
+                <FamilyGuard>
                   <RewardsPage />
-                </ProtectedRoute>
+                </FamilyGuard>
               }
             />
             <Route
               path="/children/:id"
               element={
-                <ProtectedRoute>
+                <FamilyGuard>
                   <ChildDetailPage />
-                </ProtectedRoute>
+                </FamilyGuard>
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />

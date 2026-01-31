@@ -1,10 +1,95 @@
-# Manual Testing Guide
+# Testing Guide
 
-This guide will help you test all features of the application.
+This guide covers both automated and manual testing of the application.
 
-## 1. User Registration & Login
+## Automated Tests
 
-### Test Registration
+The server includes comprehensive automated tests using Vitest and Supertest.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with verbose output
+npm test -- --reporter=verbose
+
+# Run specific test file
+npm test -- tests/auth.test.ts
+
+# Run tests matching a pattern
+npm test -- -t "should create a new family"
+```
+
+### Test Coverage
+
+| Test File | Tests | Description |
+|-----------|-------|-------------|
+| auth.test.ts | 15 | Registration, login, logout, session |
+| families.test.ts | 28 | Create, join, leave, members, invite codes |
+| children.test.ts | 21 | CRUD, points, family isolation |
+| tasks.test.ts | 20 | CRUD, completion, point awards |
+| rewards.test.ts | 21 | CRUD, redemption, point validation |
+| **Total** | **105** | |
+
+### Test Categories
+
+#### Authentication Tests
+- User registration with validation
+- Login with valid/invalid credentials
+- Logout and cookie clearing
+- Session retrieval (/me endpoint)
+- Family info included in session
+
+#### Family Tests
+- Create family (becomes admin)
+- Join family via invite code
+- Leave family (with admin succession)
+- Delete family when last member leaves
+- List family members
+- Update member roles (admin only)
+- Remove members (admin only)
+- Get/regenerate invite codes (admin only)
+- Update family name (admin only)
+- Delete family (admin only)
+
+#### Children Tests
+- Create child with validation
+- List children (family-scoped)
+- Get single child
+- Update child
+- Delete child
+- Point adjustments (add/subtract)
+- Family isolation (can't access other family's children)
+
+#### Tasks Tests
+- Create task with validation
+- List tasks (family-scoped)
+- Get single task
+- Update task
+- Delete task
+- Complete task (awards points)
+- Point accumulation
+- Family isolation
+
+#### Rewards Tests
+- Create reward with validation
+- List rewards (family-scoped)
+- Get single reward
+- Update reward
+- Delete reward
+- Redeem reward (deducts points)
+- Insufficient points validation
+- Family isolation
+
+---
+
+## Manual Testing Guide
+
+### 1. User Registration & Login
+
+#### Test Registration
 1. Navigate to http://localhost:5173
 2. Click "Register"
 3. Fill in:
@@ -12,20 +97,39 @@ This guide will help you test all features of the application.
    - Email: "parent@test.com"
    - Password: "password123"
 4. Click "Register"
-5. ✓ Should be automatically logged in and redirected to Dashboard
+5. ✓ Should be redirected to Family Setup page
 
-### Test Login
+#### Test Login
 1. Click "Logout" in the header
 2. Click "Login"
 3. Fill in:
    - Email: "parent@test.com"
    - Password: "password123"
 4. Click "Login"
-5. ✓ Should be logged in and see Dashboard
+5. ✓ Should be logged in
 
-## 2. Child Management
+### 2. Family Setup
 
-### Create Children
+#### Create a Family
+1. After registration, you'll see the Family Setup page
+2. Click "Create a Family"
+3. Enter family name: "Smith Family"
+4. Click "Create Family"
+5. ✓ Should see success message with invite code
+6. ✓ Should be redirected to Dashboard
+
+#### Join a Family (Second User)
+1. Open an incognito window or different browser
+2. Register a new account: "parent2@test.com"
+3. On Family Setup, click "Join a Family"
+4. Enter the invite code from the first user
+5. Click "Join Family"
+6. ✓ Should see the same family
+7. ✓ Should see children created by first user
+
+### 3. Child Management
+
+#### Create Children
 1. On Dashboard, click "+ Add Child"
 2. Create first child:
    - Name: "Alice"
@@ -40,16 +144,14 @@ This guide will help you test all features of the application.
    - Color: Green (#10b981)
 6. ✓ Bob should appear with 0 points
 
-### View Child Details
-1. Click on Alice's card
-2. ✓ Should see detailed view with:
-   - Current points (0)
-   - Stats (all zeros)
-   - No activity yet
+#### Test Family Sharing
+1. Switch to the second user (parent2)
+2. Go to Dashboard
+3. ✓ Should see Alice and Bob (same children)
 
-## 3. Task Management
+### 4. Task Management
 
-### Create Tasks
+#### Create Tasks
 1. Go to "Tasks" page
 2. Click "+ Add Task"
 3. Create task:
@@ -63,10 +165,9 @@ This guide will help you test all features of the application.
 
 6. Create more tasks:
    - "Homework" (15 points, Homework category)
-   - "Brush Teeth" (5 points, Hygiene category)
    - "Help with Dishes" (20 points, Chores category)
 
-### Complete Tasks
+#### Complete Tasks
 1. Click "Complete" on "Make Your Bed"
 2. Select "Alice"
 3. Add note: "Did a great job!"
@@ -75,15 +176,9 @@ This guide will help you test all features of the application.
 6. Go to Dashboard
 7. ✓ Alice should now have 10 points
 
-8. Complete "Homework" for Alice
-9. ✓ Alice should now have 25 points total
+### 5. Reward System
 
-10. Complete "Brush Teeth" for Bob
-11. ✓ Bob should have 5 points
-
-## 4. Reward System
-
-### Create Rewards
+#### Create Rewards
 1. Go to "Rewards" page
 2. Click "+ Add Reward"
 3. Create reward:
@@ -94,100 +189,90 @@ This guide will help you test all features of the application.
 4. Click "Add Reward"
 5. ✓ Reward should appear in list
 
-6. Create more rewards:
-   - "Movie Night" (30 points, Activities)
-   - "New Book" (40 points, Toys)
-   - "Extra Screen Time" (20 points, Privileges)
-
-### Test Insufficient Points
+#### Test Insufficient Points
 1. Click "Redeem" on "Ice Cream" (50 points)
-2. Select "Alice" (has 25 points)
+2. Select "Alice" (has only 10 points)
 3. Click "Redeem Reward"
 4. ✓ Should see error "Insufficient points"
 
-### Complete More Tasks
-1. Go to Tasks
-2. Complete "Help with Dishes" for Alice (20 points)
-3. Complete "Homework" for Alice (15 points)
-4. ✓ Alice should now have 60 points
-
-### Redeem Reward
-1. Go to Rewards
-2. Click "Redeem" on "Ice Cream" (50 points)
+#### Redeem Reward (After Earning Points)
+1. Complete more tasks until Alice has 50+ points
+2. Click "Redeem" on "Ice Cream"
 3. Select "Alice"
-4. Add note: "Earned it!"
-5. Click "Redeem Reward"
-6. ✓ Should see success message
-7. Go to Dashboard
-8. ✓ Alice should now have 10 points (60 - 50)
+4. Click "Redeem Reward"
+5. ✓ Should see success message
+6. ✓ Alice's points should decrease by 50
 
-## 5. Activity & Progress
+### 6. Family Administration
 
-### View Activity
+#### Test Invite Code (Admin Only)
+1. As the admin user, go to Family Settings
+2. ✓ Should see the invite code
+3. Click "Regenerate"
+4. ✓ Should get a new invite code
+
+#### Test Member Management
+1. As admin, go to Family Settings > Members
+2. ✓ Should see both parents listed
+3. Try promoting parent2 to admin
+4. ✓ Role should update
+5. Try removing a member
+6. ✓ Member should be removed from family
+
+#### Test Admin Restrictions
+1. As a non-admin member, go to Family Settings
+2. ✓ Should NOT see invite code
+3. ✓ Should NOT be able to remove members
+4. ✓ Should NOT be able to change roles
+
+### 7. Activity & Progress
+
+#### View Activity
 1. Click on Alice's card
 2. ✓ Should see:
-   - Current points: 10
-   - Total tasks completed: 4
-   - Total points earned: 70
-   - Rewards redeemed: 1
-   - Points spent: 50
+   - Current points
+   - Total tasks completed
+   - Total points earned
+   - Rewards redeemed
+   - Points spent
+   - Recent activity feed
 
-3. ✓ Recent activity should show:
-   - Redeemed: Ice Cream (-50 pts)
-   - Completed: Help with Dishes (+20 pts)
-   - Completed: Homework (+15 pts)
-   - Completed: Homework (+15 pts)
-   - Completed: Make Your Bed (+10 pts)
+#### Check Badges
+1. ✓ Badges appear as milestones are reached:
+   - "First 100 Points"
+   - "10 Tasks Complete"
+   - etc.
 
-### Check Badges
-1. ✓ Should see badge: "10 Tasks Complete" (if 10+ tasks completed)
+### 8. Data Isolation Tests
 
-### View Chart
-1. ✓ Points chart should show points earned per day
-2. ✓ Line should show upward trend
+#### Cross-Family Isolation
+1. Create a completely separate user/family
+2. Create children, tasks, rewards
+3. ✓ Should NOT see data from other families
+4. ✓ API calls to other family's resources should return 404
 
-## 6. Edge Cases
+### 9. Edge Cases
 
-### Test Delete Child Warning
-1. Go to Dashboard
-2. Click X on Bob's card
-3. ✓ Should see confirmation dialog
-4. Click Cancel
-5. ✓ Bob should still be there
+#### Last Admin Leave
+1. With only one admin, try to leave
+2. ✓ Should show error if other members exist
+3. ✓ Should delete family if you're the only member
 
-### Test Delete Task
-1. Go to Tasks
-2. Click "Delete" on any task
-3. ✓ Should see confirmation
-4. Confirm deletion
-5. ✓ Task should be removed
+#### Delete Child with History
+1. Complete tasks for a child
+2. Delete the child
+3. ✓ Child and all history should be deleted (cascade)
 
-### Test Logout
-1. Click "Logout" in header
-2. ✓ Should be redirected to login page
-3. Try to go to http://localhost:5173/
-4. ✓ Should be redirected to login (protected route)
+### Expected Results Summary
 
-## 7. Data Persistence
-
-### Test Data Saves
-1. Login again
-2. ✓ All children, tasks, and rewards should still be there
-3. ✓ Points should be preserved
-4. ✓ Activity history should be intact
-
-## Expected Results Summary
-
-After completing all tests, you should have:
-- ✓ 1 registered user
-- ✓ 2 children (Alice & Bob)
-- ✓ 3-4 tasks created
-- ✓ 3-4 rewards created
-- ✓ Multiple task completions
-- ✓ At least 1 reward redemption
-- ✓ Activity history visible
-- ✓ Points calculations correct
-- ✓ Data persists across sessions
+After completing manual tests:
+- ✓ Multiple users can share a family
+- ✓ Invite codes work correctly
+- ✓ Admin-only features are protected
+- ✓ Points calculate correctly
+- ✓ Data isolation works between families
+- ✓ Activity history is accurate
+- ✓ All CRUD operations work
 
 ## Common Issues
 
@@ -199,7 +284,25 @@ After completing all tests, you should have:
 - Refresh the Dashboard page
 - Check browser console for errors
 
+### Family not showing
+- Complete family setup first
+- Check /api/auth/me response
+
 ### Database errors
 - Stop the server
 - Delete `server/database.db`
 - Restart server (database will be recreated)
+
+### TypeScript errors
+```bash
+npm run typecheck -w server
+```
+
+### Test failures
+```bash
+# Run with verbose output
+npm test -- --reporter=verbose
+
+# Check specific test
+npm test -- -t "test name pattern"
+```

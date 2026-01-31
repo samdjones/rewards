@@ -7,7 +7,7 @@
 
 ## Installation
 
-1. **Clone or navigate to the project directory**
+1. **Navigate to the project directory**
 
 ```bash
 cd /home/sam/code/plan909/rewards
@@ -16,7 +16,13 @@ cd /home/sam/code/plan909/rewards
 2. **Install all dependencies**
 
 ```bash
-cd server && npm install && cd ../client && npm install && cd ..
+npm install
+```
+
+3. **Build shared types**
+
+```bash
+npm run build:shared
 ```
 
 ## Running the Application
@@ -24,8 +30,7 @@ cd server && npm install && cd ../client && npm install && cd ..
 ### Terminal 1: Start the Backend Server
 
 ```bash
-cd server
-npm start
+npm run server
 ```
 
 You should see:
@@ -55,12 +60,45 @@ Open your browser and go to: **http://localhost:5173**
 ## First Steps
 
 1. **Register**: Create a new account with your email and password
-2. **Add a Child**: Click "Add Child" and create a profile
-3. **Create Tasks**: Go to Tasks page and add some tasks with point values
-4. **Create Rewards**: Go to Rewards page and add rewards to work toward
-5. **Complete Tasks**: Mark tasks as complete for your children to award points
-6. **Redeem Rewards**: When children have enough points, redeem rewards
-7. **View Progress**: Click on a child card to see detailed stats and activity
+2. **Create or Join Family**: 
+   - Create a new family to become an admin
+   - Or enter an invite code to join an existing family
+3. **Add a Child**: Click "Add Child" and create a profile
+4. **Create Tasks**: Go to Tasks page and add some tasks with point values
+5. **Create Rewards**: Go to Rewards page and add rewards to work toward
+6. **Complete Tasks**: Mark tasks as complete for your children to award points
+7. **Redeem Rewards**: When children have enough points, redeem rewards
+8. **View Progress**: Click on a child card to see detailed stats and activity
+
+## Running Tests
+
+```bash
+npm test
+```
+
+This runs all 105 automated tests covering authentication, families, children, tasks, and rewards.
+
+## Development Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Build shared types
+npm run build:shared
+
+# Start server with hot reload
+npm run server
+
+# Run tests
+npm test
+
+# Type check
+npm run typecheck -w server
+
+# Start frontend dev server
+cd client && npm run dev
+```
 
 ## Stopping the Application
 
@@ -89,15 +127,44 @@ The database will be recreated when you restart the server.
 
 Make sure you've installed dependencies:
 ```bash
-cd server && npm install
-cd ../client && npm install
+npm install
+npm run build:shared
 ```
 
-## Development Mode
+### TypeScript Errors
 
-Both servers support hot reload:
+Run the type checker:
+```bash
+npm run typecheck -w server
+```
 
-- **Backend**: Uses Node.js --watch flag (Node 18+)
-- **Frontend**: Uses Vite HMR (Hot Module Replacement)
+## Family Setup
 
-Just save your changes and they'll be reflected immediately!
+### Creating a Family
+After registering, you'll be prompted to set up your family:
+1. Click "Create a Family"
+2. Enter a family name
+3. You'll receive an 8-character invite code to share with other parents
+
+### Joining a Family
+If another parent shared an invite code with you:
+1. Register your account
+2. Click "Join a Family"
+3. Enter the invite code
+4. You'll join as a member with access to all family data
+
+### Invite Code Format
+- 8 characters
+- Uses letters A-Z (except I, L, O) and numbers 2-9 (except 0, 1)
+- Case-insensitive
+
+## Project Structure
+
+```
+rewards/
+├── packages/shared/    # Shared TypeScript types (@rewards/shared)
+├── server/             # TypeScript Express backend
+│   ├── src/            # Source files
+│   └── tests/          # Automated tests
+└── client/             # React frontend
+```

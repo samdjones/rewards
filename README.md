@@ -1,10 +1,11 @@
 # Kids Reward Tracking App
 
-A web-based application that helps parents manage tasks, points, and rewards for their children. Parents can create profiles for each child, assign tasks, track completions, and manage a reward catalog.
+A web-based application that helps families manage tasks, points, and rewards for their children. Multiple parents can share the same family, creating and managing children, tasks, and rewards together.
 
 ## Features
 
-- **User Authentication**: Secure registration and login for parents
+- **Family System**: Create a family or join via invite code - multiple parents share the same children, tasks, and rewards
+- **User Authentication**: Secure registration and login with JWT
 - **Child Profile Management**: Create and manage multiple child profiles with customizable avatars
 - **Task System**: Create tasks with point values, mark them complete, and automatically award points
 - **Reward Catalog**: Define rewards with point costs and redeem them for children
@@ -15,10 +16,11 @@ A web-based application that helps parents manage tasks, points, and rewards for
 ## Tech Stack
 
 ### Backend
-- Node.js with Express
-- SQLite database with sql.js (pure JavaScript implementation)
-- JWT authentication with HTTP-only cookies
-- bcrypt for password hashing
+- **TypeScript** with Node.js and Express
+- **SQLite** database with sql.js (pure JavaScript implementation)
+- **JWT** authentication with HTTP-only cookies
+- **bcrypt** for password hashing
+- **Vitest + Supertest** for automated testing
 
 ### Frontend
 - React 18 with React Router
@@ -26,27 +28,39 @@ A web-based application that helps parents manage tasks, points, and rewards for
 - CSS Modules for styling
 - Recharts for data visualization
 
+### Shared Types
+- **@rewards/shared** package for type definitions shared between client and server
+- Entity types, API request/response types, and enums
+
 ## Project Structure
 
 ```
 rewards/
-├── server/                 # Backend
+├── packages/
+│   └── shared/                # Shared TypeScript types
+│       └── src/
+│           ├── enums.ts       # FamilyRole, ActivityType
+│           ├── entities/      # User, Family, Child, Task, Reward types
+│           └── api/           # Request/response types per endpoint
+├── server/                    # TypeScript Express backend
 │   ├── src/
-│   │   ├── routes/        # API routes
-│   │   ├── controllers/   # Route handlers
-│   │   ├── middleware/    # Auth middleware
-│   │   ├── db/            # Database setup
-│   │   └── server.js      # Main server file
-│   └── package.json
-├── client/                # Frontend
+│   │   ├── types/             # Express augmentation, database types
+│   │   ├── db/                # Database setup and wrapper
+│   │   ├── middleware/        # Auth and family middleware
+│   │   ├── controllers/       # Route handlers
+│   │   ├── routes/            # API routes
+│   │   ├── utils/             # Utilities (invite codes)
+│   │   ├── app.ts             # Express app setup
+│   │   └── server.ts          # Entry point
+│   └── tests/                 # Automated API tests
+├── client/                    # React frontend
 │   ├── src/
-│   │   ├── components/    # Reusable components
-│   │   ├── pages/         # Page components
-│   │   ├── context/       # Auth context
-│   │   ├── api/           # API client
-│   │   └── App.jsx        # Main app component
+│   │   ├── components/        # Reusable components
+│   │   ├── pages/             # Page components
+│   │   ├── context/           # Auth context
+│   │   └── api/               # API client
 │   └── package.json
-├── database.db            # SQLite database (created on first run)
+├── package.json               # Workspace root
 └── README.md
 ```
 
@@ -55,42 +69,30 @@ rewards/
 ### Prerequisites
 
 - Node.js 18+ installed
-- npm or yarn package manager
+- npm package manager
 
 ### Installation
 
-1. **Install Backend Dependencies**
+From the project root:
 
 ```bash
-cd server
 npm install
 ```
 
-2. **Install Frontend Dependencies**
+This installs dependencies for all workspaces (shared, server, client).
+
+### Build Shared Types
 
 ```bash
-cd client
-npm install
+npm run build:shared
 ```
-
-3. **Configure Environment Variables**
-
-The server/.env file is already configured for development:
-```
-PORT=3000
-JWT_SECRET=dev-secret-key-change-in-production-12345
-NODE_ENV=development
-```
-
-For production, change the JWT_SECRET to a secure random string.
 
 ### Running the Application
 
 1. **Start the Backend Server**
 
 ```bash
-cd server
-npm start
+npm run server
 ```
 
 The server will start on http://localhost:3000
@@ -110,110 +112,43 @@ The frontend will start on http://localhost:5173
 
 Open your browser and navigate to http://localhost:5173
 
-## Next Steps - Getting Started
+## Development Commands
 
-### Option 1: Use Test Data (Recommended for Quick Demo)
+```bash
+# Install all dependencies
+npm install
 
-The application has been tested and includes sample data. You can login with:
+# Build shared types package
+npm run build:shared
 
-**Test Account:**
-- Email: `test@example.com`
-- Password: `password123`
+# Start server with hot reload
+npm run server
 
-**What's included:**
-- 2 children: Alice (10 points) and Bob (15 points)
-- 3 tasks: Make Your Bed, Homework, Help with Dishes
-- 2 rewards: Ice Cream, Movie Night
-- Sample activity history and completed transactions
+# Run server tests
+npm test
 
-This allows you to immediately see the app in action with data already populated.
+# Type check server
+npm run typecheck -w server
 
-### Option 2: Start Fresh
+# Start client dev server
+cd client && npm run dev
+```
 
-1. **Delete the test database** (if you want to start from scratch):
-   ```bash
-   rm server/database.db
-   ```
+## Family System
 
-2. **Restart the server** - a new empty database will be created
+### Creating a Family
+1. Register a new account
+2. You'll be prompted to either create a family or join an existing one
+3. Creating a family makes you an admin with an 8-character invite code
 
-3. **Register your own account** at http://localhost:5173/register
+### Joining a Family
+1. Register a new account
+2. Enter the invite code shared by a family admin
+3. You'll join as a member and see all the family's children, tasks, and rewards
 
-4. **Follow the usage guide below** to create your own children, tasks, and rewards
-
-### What to Expect
-
-When you first access the application:
-
-1. **Login/Register Page** - Create an account or use test credentials
-2. **Dashboard** - See all your children with their current point balances
-3. **Tasks Page** - Create and manage tasks, mark them as complete
-4. **Rewards Page** - Create rewards and redeem them for children
-5. **Child Detail** - Click any child card to see detailed stats, activity history, and charts
-
-### Quick Test Workflow
-
-1. Start both servers (backend on port 3000, frontend on port 5173)
-2. Open http://localhost:5173 in your browser
-3. Login with test@example.com / password123
-4. Click on Alice's or Bob's card to see their detailed stats
-5. Go to Tasks and complete a task for one of the children
-6. Check the Dashboard to see updated points
-7. Go to Rewards and try to redeem a reward
-
-### Troubleshooting
-
-**Port already in use:**
-- Kill any processes on port 3000: `lsof -ti:3000 | xargs kill -9`
-- Kill any processes on port 5173: `lsof -ti:5173 | xargs kill -9`
-
-**Database errors:**
-- Delete `server/database.db` and restart the server
-
-**Module not found:**
-- Re-run `npm install` in both server and client directories
-
-## Usage Guide
-
-### Getting Started
-
-1. **Register an Account**
-   - Click "Register" on the login page
-   - Enter your name, email, and password
-   - You'll be automatically logged in
-
-2. **Add Children**
-   - Click "Add Child" on the dashboard
-   - Enter the child's name, optional age, and choose an avatar color
-   - The child will appear on the dashboard with 0 points
-
-3. **Create Tasks**
-   - Navigate to the "Tasks" page
-   - Click "Add Task"
-   - Enter task name, description, point value, and category
-   - Mark as recurring if it's a daily/weekly task
-
-4. **Complete Tasks**
-   - On the Tasks page, click "Complete" on a task
-   - Select which child completed it
-   - Add optional notes
-   - Points are automatically awarded
-
-5. **Create Rewards**
-   - Navigate to the "Rewards" page
-   - Click "Add Reward"
-   - Enter reward name, description, point cost, and category
-
-6. **Redeem Rewards**
-   - On the Rewards page, click "Redeem" on a reward
-   - Select which child is redeeming it
-   - The system checks if they have enough points
-   - Points are automatically deducted
-
-7. **View Progress**
-   - Click on a child card in the dashboard
-   - View detailed statistics, activity history, and achievements
-   - See charts of points earned over time
+### Family Roles
+- **Admin**: Can invite others, manage members, update family settings, regenerate invite codes
+- **Member**: Can manage children, tasks, and rewards, but cannot manage other members
 
 ## API Endpoints
 
@@ -221,10 +156,23 @@ When you first access the application:
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `POST /api/auth/logout` - Logout user
-- `GET /api/auth/me` - Get current user
+- `GET /api/auth/me` - Get current user with family info
+
+### Families
+- `POST /api/families` - Create a new family
+- `GET /api/families/current` - Get current family
+- `PUT /api/families/current` - Update family (admin)
+- `DELETE /api/families/current` - Delete family (admin)
+- `POST /api/families/join` - Join family via invite code
+- `POST /api/families/leave` - Leave current family
+- `GET /api/families/current/members` - List family members
+- `PUT /api/families/current/members/:userId/role` - Update member role (admin)
+- `DELETE /api/families/current/members/:userId` - Remove member (admin)
+- `GET /api/families/current/invite-code` - Get invite code (admin)
+- `POST /api/families/current/invite-code/regenerate` - Regenerate code (admin)
 
 ### Children
-- `GET /api/children` - Get all children
+- `GET /api/children` - Get all children in family
 - `POST /api/children` - Create child
 - `GET /api/children/:id` - Get child details
 - `PUT /api/children/:id` - Update child
@@ -232,97 +180,95 @@ When you first access the application:
 - `POST /api/children/:id/adjust-points` - Manually adjust points
 
 ### Tasks
-- `GET /api/tasks` - Get all tasks
+- `GET /api/tasks` - Get all tasks in family
 - `POST /api/tasks` - Create task
 - `GET /api/tasks/:id` - Get task details
 - `PUT /api/tasks/:id` - Update task
 - `DELETE /api/tasks/:id` - Delete task
-- `POST /api/tasks/:id/complete` - Mark task complete
+- `POST /api/tasks/:id/complete` - Mark task complete for a child
 
 ### Rewards
-- `GET /api/rewards` - Get all rewards
+- `GET /api/rewards` - Get all rewards in family
 - `POST /api/rewards` - Create reward
 - `GET /api/rewards/:id` - Get reward details
 - `PUT /api/rewards/:id` - Update reward
 - `DELETE /api/rewards/:id` - Delete reward
-- `POST /api/rewards/:id/redeem` - Redeem reward
+- `POST /api/rewards/:id/redeem` - Redeem reward for a child
 
 ### Activity
 - `GET /api/children/:id/activity` - Get child's activity history
 - `GET /api/children/:id/stats` - Get child's statistics
+
+## Testing
+
+The server includes comprehensive automated tests using Vitest and Supertest.
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+```
+
+**Test Coverage:**
+- 105 automated tests across 5 test files
+- Auth API tests (15 tests)
+- Families API tests (28 tests)
+- Children API tests (21 tests)
+- Tasks API tests (20 tests)
+- Rewards API tests (21 tests)
 
 ## Database Schema
 
 The application uses SQLite with the following tables:
 
 - **users**: Parent accounts
-- **children**: Child profiles
-- **tasks**: Available tasks
+- **families**: Family groups with invite codes
+- **family_members**: Links users to families with roles
+- **children**: Child profiles (scoped by family)
+- **tasks**: Available tasks (scoped by family)
 - **task_completions**: History of completed tasks
-- **rewards**: Available rewards
+- **rewards**: Available rewards (scoped by family)
 - **redemptions**: History of redeemed rewards
 - **point_adjustments**: Manual point adjustments
 
 See `server/src/db/schema.sql` for the complete schema.
 
-## Development
-
-### Backend Development
-
-```bash
-cd server
-npm run dev  # Auto-restarts on file changes
-```
-
-### Frontend Development
-
-```bash
-cd client
-npm run dev  # Hot module replacement enabled
-```
-
-### Building for Production
-
-```bash
-cd client
-npm run build
-```
-
-The production build will be in `client/dist/`
-
 ## Security Features
 
-- Passwords are hashed with bcrypt (10 rounds)
+- Passwords hashed with bcrypt (10 rounds)
 - JWT tokens stored in HTTP-only cookies
 - CORS configured for frontend origin
 - SQL injection protection via parameterized queries
 - Foreign key constraints for data integrity
+- Family-based data isolation
 
-## Testing
+## Using Shared Types
 
-The application has been thoroughly tested with all core functionality verified working correctly.
+The `@rewards/shared` package provides TypeScript types for both server and client:
 
-**Test Status:** ✅ All core features passing
+```typescript
+// Import entity types
+import type { User, Child, Task, Family } from '@rewards/shared';
 
-See **[TEST_RESULTS.md](TEST_RESULTS.md)** for detailed test results including:
-- API endpoint testing results
-- Point calculation verification
-- Validation testing
-- Activity tracking verification
-- Final test data state
+// Import API types
+import type { LoginRequest, AuthResponse } from '@rewards/shared/api';
 
-For manual testing instructions, see **[TEST.md](TEST.md)**
+// Import enums
+import type { FamilyRole, ActivityType } from '@rewards/shared';
+```
 
 ## Additional Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide with minimal steps
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and data flow diagrams
 - **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Complete implementation details
-- **[TEST_RESULTS.md](TEST_RESULTS.md)** - Comprehensive test results
+- **[TEST.md](TEST.md)** - Manual testing guide
+- **[TEST_RESULTS.md](TEST_RESULTS.md)** - Automated test results
 
 ## Future Enhancements
 
-- Multiple parent accounts per family
 - Kid-facing read-only view
 - Email notifications for milestones
 - Photo uploads for tasks/rewards
@@ -334,7 +280,3 @@ For manual testing instructions, see **[TEST.md](TEST.md)**
 ## License
 
 MIT
-
-## Support
-
-For issues or questions, please open an issue in the repository.

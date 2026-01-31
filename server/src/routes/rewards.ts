@@ -5,7 +5,7 @@ import {
   createReward,
   updateReward,
   deleteReward,
-  redeemReward
+  redeemReward,
 } from '../controllers/rewardsController.js';
 
 const router = express.Router();

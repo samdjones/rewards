@@ -3,157 +3,234 @@
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         Browser                              │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │           React Frontend (Port 5173)                    │ │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │ │
-│  │  │   Pages      │  │  Components  │  │   Context    │ │ │
-│  │  │ - Dashboard  │  │ - ChildCard  │  │ - Auth       │ │ │
-│  │  │ - Tasks      │  │ - Modal      │  │              │ │ │
-│  │  │ - Rewards    │  │ - Layout     │  │              │ │ │
-│  │  │ - Detail     │  │              │  │              │ │ │
-│  │  └──────┬───────┘  └──────────────┘  └──────────────┘ │ │
-│  │         │                                               │ │
-│  │         │ API Calls                                     │ │
-│  │         ▼                                               │ │
-│  │  ┌──────────────────────────────────────────────────┐  │ │
-│  │  │          API Client Layer                        │  │ │
-│  │  │  /api/auth, /api/children, /api/tasks, etc.     │  │ │
-│  │  └──────────────────────────────────────────────────┘  │ │
-│  └────────────────────────────────────────────────────────┘ │
-└───────────────────────────┬─────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                           Browser                                │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │             React Frontend (Port 5173)                      │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐ │ │
+│  │  │   Pages      │  │  Components  │  │     Context      │ │ │
+│  │  │ - Dashboard  │  │ - ChildCard  │  │ - Auth           │ │ │
+│  │  │ - Tasks      │  │ - Modal      │  │                  │ │ │
+│  │  │ - Rewards    │  │ - Layout     │  │                  │ │ │
+│  │  │ - Family     │  │              │  │                  │ │ │
+│  │  │ - Detail     │  │              │  │                  │ │ │
+│  │  └──────┬───────┘  └──────────────┘  └──────────────────┘ │ │
+│  │         │                                                   │ │
+│  │         │ API Calls                                         │ │
+│  │         ▼                                                   │ │
+│  │  ┌──────────────────────────────────────────────────────┐  │ │
+│  │  │              API Client Layer                         │  │ │
+│  │  │  auth, families, children, tasks, rewards, activity  │  │ │
+│  │  └──────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└───────────────────────────┬─────────────────────────────────────┘
                             │
                             │ HTTP/JSON + Cookies
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│           TypeScript Express Backend (Port 3000)                 │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                     Middleware                              │ │
+│  │  - CORS                                                     │ │
+│  │  - Cookie Parser                                            │ │
+│  │  - authenticateToken (JWT validation)                       │ │
+│  │  - attachFamilyInfo (loads user's family context)           │ │
+│  │  - requireFamily (ensures user has a family)                │ │
+│  │  - requireFamilyAdmin (admin-only endpoints)                │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                            │                                     │
+│                            ▼                                     │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                       Routes                                │ │
+│  │  /api/auth       → authController                           │ │
+│  │  /api/families   → familyController                         │ │
+│  │  /api/children   → childrenController                       │ │
+│  │  /api/tasks      → tasksController                          │ │
+│  │  /api/rewards    → rewardsController                        │ │
+│  │  /api/children   → activityController (activity & stats)    │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                            │                                     │
+│                            ▼                                     │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                    Controllers                              │ │
+│  │  - Business Logic                                           │ │
+│  │  - Input Validation                                         │ │
+│  │  - Family-scoped queries (using req.familyId)               │ │
+│  │  - Response Formatting                                      │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                            │                                     │
+│                            ▼                                     │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                Database Wrapper                             │ │
+│  │  - prepare<T>() for typed queries                           │ │
+│  │  - run(), get(), all() methods                              │ │
+│  │  - Transaction support                                      │ │
+│  │  - Test database injection                                  │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└───────────────────────────┬─────────────────────────────────────┘
                             │
                             ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Express Backend (Port 3000)                     │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │                   Middleware                            │ │
-│  │  - CORS                                                 │ │
-│  │  - Cookie Parser                                        │ │
-│  │  - Auth Token Validation                                │ │
-│  └────────────────────────────────────────────────────────┘ │
-│                            │                                 │
-│                            ▼                                 │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │                     Routes                              │ │
-│  │  /api/auth     → authController                         │ │
-│  │  /api/children → childrenController                     │ │
-│  │  /api/tasks    → tasksController                        │ │
-│  │  /api/rewards  → rewardsController                      │ │
-│  │  /api/activity → activityController                     │ │
-│  └────────────────────────────────────────────────────────┘ │
-│                            │                                 │
-│                            ▼                                 │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │                  Controllers                            │ │
-│  │  - Business Logic                                       │ │
-│  │  - Input Validation                                     │ │
-│  │  - Response Formatting                                  │ │
-│  └────────────────────────────────────────────────────────┘ │
-│                            │                                 │
-│                            ▼                                 │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │              Database Wrapper                           │ │
-│  │  - prepare(), run(), get(), all()                       │ │
-│  │  - Transaction support                                  │ │
-│  └────────────────────────────────────────────────────────┘ │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                SQLite Database (sql.js)                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │  users   │  │ children │  │  tasks   │  │ rewards  │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-│  ┌──────────────┐  ┌─────────────┐  ┌──────────────────┐  │
-│  │ completions  │  │ redemptions │  │  point_adjust   │  │
-│  └──────────────┘  └─────────────┘  └──────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                   SQLite Database (sql.js)                       │
+│  ┌──────────┐  ┌──────────┐  ┌────────────────┐                │
+│  │  users   │  │ families │  │ family_members │                │
+│  └──────────┘  └──────────┘  └────────────────┘                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
+│  │ children │  │  tasks   │  │ rewards  │  │ completions  │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────────┘   │
+│  ┌─────────────┐  ┌──────────────────┐                         │
+│  │ redemptions │  │  point_adjusts   │                         │
+│  └─────────────┘  └──────────────────┘                         │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Data Flow Examples
-
-### 1. User Registration
+## Monorepo Structure
 
 ```
-User Input → RegisterPage → authAPI.register()
-    ↓
-POST /api/auth/register → authController.register()
-    ↓
-- Hash password with bcrypt
-- Insert into users table
-- Generate JWT token
-- Set HTTP-only cookie
-    ↓
-Return user object → Update AuthContext → Redirect to Dashboard
+rewards/
+├── package.json              # Workspace root with npm workspaces
+├── packages/
+│   └── shared/               # @rewards/shared - TypeScript types
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── src/
+│           ├── index.ts      # Main exports
+│           ├── enums.ts      # FamilyRole, ActivityType
+│           ├── entities/     # Entity type definitions
+│           │   ├── user.ts
+│           │   ├── family.ts
+│           │   ├── child.ts
+│           │   ├── task.ts
+│           │   └── reward.ts
+│           └── api/          # API request/response types
+│               ├── auth.ts
+│               ├── families.ts
+│               ├── children.ts
+│               ├── tasks.ts
+│               ├── rewards.ts
+│               └── activity.ts
+├── server/                   # TypeScript Express server
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vitest.config.ts
+│   └── src/
+│       ├── types/            # TypeScript declarations
+│       │   ├── express.d.ts  # Express Request augmentation
+│       │   ├── database.ts   # Database wrapper types
+│       │   └── sql.js.d.ts   # sql.js type declarations
+│       ├── db/
+│       │   ├── schema.sql
+│       │   ├── init.ts
+│       │   └── wrapper.ts
+│       ├── middleware/
+│       │   ├── auth.ts
+│       │   └── familyAuth.ts
+│       ├── controllers/
+│       │   ├── authController.ts
+│       │   ├── familyController.ts
+│       │   ├── childrenController.ts
+│       │   ├── tasksController.ts
+│       │   ├── rewardsController.ts
+│       │   └── activityController.ts
+│       ├── routes/
+│       │   ├── auth.ts
+│       │   ├── families.ts
+│       │   ├── children.ts
+│       │   ├── tasks.ts
+│       │   ├── rewards.ts
+│       │   └── activity.ts
+│       ├── utils/
+│       │   └── inviteCode.ts
+│       ├── app.ts
+│       └── server.ts
+└── client/                   # React frontend
+    └── src/
+        ├── api/
+        ├── components/
+        ├── context/
+        └── pages/
 ```
 
-### 2. Complete Task
+## Database Relationships
 
 ```
-User clicks "Complete" → TasksPage → Modal opens
-    ↓
-Select child + optional notes → Submit form
-    ↓
-POST /api/tasks/:id/complete → tasksController.completeTask()
-    ↓
-Transaction:
-  1. Insert into task_completions
-  2. Update children.current_points (+points)
-  3. Save database
-    ↓
-Return updated child → Refresh children list → Update UI
+                            ┌─────────────┐
+                            │    users    │
+                            │ ─────────── │
+                            │ id          │
+                            │ email       │
+                            │ password    │
+                            │ name        │
+                            └──────┬──────┘
+                                   │
+                                   │ 1:1 (via family_members)
+                                   ▼
+                            ┌──────────────────┐
+                            │  family_members  │
+                            │ ──────────────── │
+                            │ id               │
+                            │ family_id (FK)   │◄──┐
+                            │ user_id (FK)     │   │
+                            │ role (admin/     │   │
+                            │       member)    │   │
+                            └──────────────────┘   │
+                                                   │
+                            ┌─────────────┐        │
+                            │  families   │        │
+                            │ ─────────── │        │
+                            │ id          │────────┘
+                            │ name        │
+                            │ invite_code │
+                            └──────┬──────┘
+                                   │
+          ┌────────────────────────┼────────────────────────┐
+          │                        │                        │
+          ▼                        ▼                        ▼
+   ┌──────────────┐         ┌──────────┐            ┌──────────┐
+   │   children   │         │  tasks   │            │ rewards  │
+   │ ──────────── │         │ ──────── │            │ ──────── │
+   │ id           │         │ id       │            │ id       │
+   │ family_id    │         │ family_id│            │ family_id│
+   │ created_by   │         │ created_by│           │ created_by│
+   │ name         │         │ name     │            │ name     │
+   │ current_pts  │         │ points   │            │ cost     │
+   └──────┬───────┘         └────┬─────┘            └────┬─────┘
+          │                      │                       │
+          │         ┌────────────┴───┐                   │
+          │         │                │                   │
+          ▼         ▼                │                   ▼
+┌────────────────┐ ┌────────────────┐│          ┌────────────────┐
+│ point_adjust   │ │ completions    ││          │  redemptions   │
+│ ────────────── │ │ ────────────── ││          │ ────────────── │
+│ child_id (FK)  │ │ task_id (FK)   ││          │ reward_id (FK) │
+│ amount         │ │ child_id (FK)  │◄──────────│ child_id (FK)  │
+│ reason         │ │ points_earned  │           │ points_spent   │
+└────────────────┘ └────────────────┘           └────────────────┘
 ```
 
-### 3. Redeem Reward
+## Family-Based Data Isolation
 
-```
-User clicks "Redeem" → RewardsPage → Modal opens
-    ↓
-Select child → Check available points in UI
-    ↓
-POST /api/rewards/:id/redeem → rewardsController.redeemReward()
-    ↓
-Validate:
-  - Reward exists
-  - Child exists
-  - Sufficient points (child.current_points >= reward.point_cost)
-    ↓
-Transaction:
-  1. Insert into redemptions
-  2. Update children.current_points (-points)
-  3. Save database
-    ↓
-Return updated child → Refresh children list → Update UI
-```
+All data queries are scoped by `family_id`:
 
-### 4. View Child Statistics
+```typescript
+// Middleware attaches family info to every authenticated request
+export const attachFamilyInfo = (req, res, next) => {
+  const membership = db.prepare<FamilyMembershipRow>(
+    `SELECT fm.family_id, fm.role, f.name as family_name
+     FROM family_members fm
+     JOIN families f ON fm.family_id = f.id
+     WHERE fm.user_id = ?`
+  ).get(req.userId);
 
-```
-User clicks child card → Navigate to /children/:id
-    ↓
-Parallel requests:
-  - GET /api/children/:id        → Get child details
-  - GET /api/children/:id/activity → Get activity history
-  - GET /api/children/:id/stats   → Get statistics
-    ↓
-activityController.getChildStats():
-  - Query task completions
-  - Query redemptions
-  - Query point adjustments
-  - Calculate totals
-  - Generate badge list
-  - Return aggregated data
-    ↓
-Render:
-  - Child profile header
-  - Statistics cards
-  - Achievement badges
-  - Points chart (Recharts)
-  - Activity feed
+  req.familyId = membership?.family_id ?? null;
+  req.familyRole = membership?.role ?? null;
+  next();
+};
+
+// Controllers use req.familyId for all queries
+const children = db.prepare<Child>(
+  'SELECT * FROM children WHERE family_id = ?'
+).all(req.familyId);
 ```
 
 ## Authentication Flow
@@ -174,111 +251,137 @@ Render:
                 ▼                         ▼
         ┌───────────────┐        ┌──────────────┐
         │ JWT Valid     │        │ No JWT       │
-        │ Return user   │        │ Return 401   │
+        │ Return user + │        │ Return 401   │
+        │ family info   │        │              │
         └───────┬───────┘        └──────┬───────┘
                 │                       │
                 ▼                       ▼
         ┌───────────────┐        ┌──────────────┐
-        │ Set user      │        │ Set user=null│
-        │ state         │        │ state        │
-        └───────┬───────┘        └──────┬───────┘
-                │                       │
-                │                       │
-                └───────────┬───────────┘
-                            │
-                            ▼
-                ┌───────────────────────┐
-                │  ProtectedRoute       │
-                │  checks user state    │
-                └───────────┬───────────┘
-                            │
-                ┌───────────┴───────────┐
-                │                       │
-                ▼                       ▼
-        ┌───────────────┐        ┌──────────────┐
-        │ user exists   │        │ user is null │
-        │ Show content  │        │ Redirect to  │
+        │ Has family?   │        │ Redirect to  │
         │               │        │ /login       │
-        └───────────────┘        └──────────────┘
+        └───────┬───────┘        └──────────────┘
+                │
+        ┌───────┴───────┐
+        │               │
+        ▼               ▼
+┌───────────────┐ ┌──────────────┐
+│ Yes: Show     │ │ No: Show     │
+│ Dashboard     │ │ Family Setup │
+└───────────────┘ └──────────────┘
 ```
 
-## Component Hierarchy
+## Data Flow: Complete Task
 
 ```
-App
-├── BrowserRouter
-└── AuthProvider
-    └── Layout
-        ├── Header
-        │   ├── Logo
-        │   └── UserInfo (with Logout button)
-        ├── Nav
-        │   └── Navigation Links
-        └── Routes
-            ├── /login → LoginPage
-            ├── /register → RegisterPage
-            ├── / → ProtectedRoute → Dashboard
-            │   └── ChildCard (multiple)
-            ├── /tasks → ProtectedRoute → TasksPage
-            │   ├── TaskCard (multiple)
-            │   └── Modal (create/complete)
-            ├── /rewards → ProtectedRoute → RewardsPage
-            │   ├── RewardCard (multiple)
-            │   └── Modal (create/redeem)
-            └── /children/:id → ProtectedRoute → ChildDetailPage
-                ├── Child Header
-                ├── Stats Grid
-                ├── Badges Section
-                ├── Points Chart
-                └── Activity Feed
+User clicks "Complete" → TasksPage → Modal opens
+    ↓
+Select child + optional notes → Submit form
+    ↓
+POST /api/tasks/:id/complete → tasksController.completeTask()
+    ↓
+Middleware chain:
+  1. authenticateToken → sets req.userId
+  2. attachFamilyInfo → sets req.familyId, req.familyRole
+  3. requireFamily → ensures user has a family
+    ↓
+Controller validates:
+  - Task exists AND belongs to req.familyId
+  - Child exists AND belongs to req.familyId
+    ↓
+Transaction:
+  1. INSERT into task_completions
+  2. UPDATE children.current_points (+points)
+  3. Save database
+    ↓
+Return updated child → Refresh UI
 ```
 
-## Database Relationships
+## Type Safety Flow
 
 ```
-                            ┌─────────────┐
-                            │    users    │
-                            │ ─────────── │
-                            │ id          │
-                            │ email       │
-                            │ password    │
-                            │ name        │
-                            └──────┬──────┘
-                                   │
-                    ┌──────────────┼──────────────┬──────────────┐
-                    │              │              │              │
-                    ▼              ▼              ▼              ▼
-            ┌──────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐
-            │   children   │ │  tasks   │ │ rewards  │ │ (user owns)  │
-            │ ──────────── │ │ ──────── │ │ ──────── │ │              │
-            │ id           │ │ id       │ │ id       │ │              │
-            │ user_id (FK) │ │ user_id  │ │ user_id  │ │              │
-            │ name         │ │ name     │ │ name     │ │              │
-            │ current_pts  │ │ points   │ │ cost     │ │              │
-            └──────┬───────┘ └────┬─────┘ └────┬─────┘ │              │
-                   │              │            │        │              │
-         ┌─────────┼──────────────┼────────────┼────────┘              │
-         │         │              │            │                       │
-         ▼         │              │            │                       │
-┌────────────────┐ │              │            │                       │
-│ point_adjust   │ │              │            │                       │
-│ ────────────── │ │              │            │                       │
-│ child_id (FK)  │◀┘              │            │                       │
-│ amount         │                │            │                       │
-│ reason         │                │            │                       │
-└────────────────┘                │            │                       │
-                                  │            │                       │
-         ┌────────────────────────┴───┐        │                       │
-         │                            │        │                       │
-         ▼                            ▼        ▼                       │
-┌────────────────────┐       ┌────────────────────┐                   │
-│ task_completions   │       │   redemptions      │                   │
-│ ────────────────── │       │ ────────────────── │                   │
-│ task_id (FK)       │       │ reward_id (FK)     │                   │
-│ child_id (FK)      │       │ child_id (FK)      │                   │
-│ points_earned      │       │ points_spent       │                   │
-│ completed_at       │       │ redeemed_at        │                   │
-└────────────────────┘       └────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                    @rewards/shared                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │   Entities   │  │   API Types  │  │     Enums        │   │
+│  │  - User      │  │  - Request   │  │  - FamilyRole    │   │
+│  │  - Family    │  │  - Response  │  │  - ActivityType  │   │
+│  │  - Child     │  │              │  │                  │   │
+│  │  - Task      │  │              │  │                  │   │
+│  └──────┬───────┘  └──────┬───────┘  └────────┬─────────┘   │
+└─────────┼─────────────────┼───────────────────┼─────────────┘
+          │                 │                   │
+          ▼                 ▼                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        Server                                │
+│  import type { Child, Task } from '@rewards/shared';         │
+│  import type { FamilyRole } from '@rewards/shared';          │
+│                                                              │
+│  // Typed database queries                                   │
+│  const child = db.prepare<Child>(                            │
+│    'SELECT * FROM children WHERE id = ?'                     │
+│  ).get(id);                                                  │
+│                                                              │
+│  // Typed request augmentation                               │
+│  interface Request {                                         │
+│    userId?: number;                                          │
+│    familyId?: number | null;                                 │
+│    familyRole?: FamilyRole | null;                           │
+│  }                                                           │
+└─────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        Client                                │
+│  import type { Child } from '@rewards/shared';               │
+│                                                              │
+│  const [children, setChildren] = useState<Child[]>([]);      │
+│                                                              │
+│  // Type-safe API responses                                  │
+│  const response = await api.getChildren();                   │
+│  setChildren(response.children);                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Testing Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Test Environment                          │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │               vitest.config.ts                          │ │
+│  │  - setupFiles: ['./tests/setup.ts']                     │ │
+│  │  - environment: 'node'                                  │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                            │                                 │
+│                            ▼                                 │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │                 tests/setup.ts                          │ │
+│  │  - Initialize sql.js                                    │ │
+│  │  - beforeEach: Create fresh in-memory database          │ │
+│  │  - Inject test DB via setTestDb()                       │ │
+│  │  - afterAll: Clean up                                   │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                            │                                 │
+│                            ▼                                 │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │                 tests/helpers.ts                        │ │
+│  │  - getApp() → creates Express app                       │ │
+│  │  - registerUser() → register + get cookie               │ │
+│  │  - setupUserWithFamily() → user + family in one step    │ │
+│  │  - createChild(), createTask(), createReward()          │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                            │                                 │
+│                            ▼                                 │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │                    Test Files                           │ │
+│  │  - auth.test.ts (15 tests)                              │ │
+│  │  - families.test.ts (28 tests)                          │ │
+│  │  - children.test.ts (21 tests)                          │ │
+│  │  - tasks.test.ts (20 tests)                             │ │
+│  │  - rewards.test.ts (21 tests)                           │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## Security Layers
@@ -287,25 +390,28 @@ App
 1. Frontend
    ├── HTTP-only cookies (no JS access to JWT)
    ├── CSRF protection via SameSite cookie attribute
-   └── Client-side route protection
+   └── Client-side route protection + family guard
 
 2. Network
    ├── CORS configuration (specific origin)
    └── Secure cookie flag (production)
 
-3. Backend
-   ├── JWT verification middleware
-   ├── Token expiration (7 days)
-   └── User ID embedded in token
+3. Backend Middleware
+   ├── authenticateToken - JWT verification
+   ├── attachFamilyInfo - Load family context
+   ├── requireFamily - Block users without family
+   └── requireFamilyAdmin - Admin-only endpoints
 
 4. Database
    ├── Parameterized queries (SQL injection prevention)
-   ├── Foreign key constraints
-   └── User isolation (queries filtered by user_id)
+   ├── Foreign key constraints with CASCADE
+   ├── Family-based data isolation (all queries scoped by family_id)
+   └── User data never crosses family boundaries
 
 5. Authentication
    ├── bcrypt password hashing (10 rounds)
-   └── Password complexity (frontend validation)
+   ├── Token expiration (7 days)
+   └── Invite code validation (8 chars, specific charset)
 ```
 
 ## API Request/Response Examples
@@ -331,6 +437,27 @@ App
 }
 ```
 **Cookie Set:** `token=eyJhbGc...` (HTTP-only)
+
+### POST /api/families
+**Request:**
+```json
+{
+  "name": "Smith Family"
+}
+```
+
+**Response:**
+```json
+{
+  "family": {
+    "id": 1,
+    "name": "Smith Family",
+    "invite_code": "ABCD2345",
+    "created_at": "2026-01-31T..."
+  },
+  "role": "admin"
+}
+```
 
 ### POST /api/tasks/5/complete
 **Request:**
@@ -366,8 +493,8 @@ App
     "currentPoints": 45
   },
   "pointsOverTime": [
-    { "date": "2024-01-20", "points": 25 },
-    { "date": "2024-01-21", "points": 30 }
+    { "date": "2026-01-20", "points": 25 },
+    { "date": "2026-01-21", "points": 30 }
   ],
   "tasksByCategory": [
     { "category": "Chores", "count": 7 },
@@ -379,25 +506,3 @@ App
   ]
 }
 ```
-
-## Performance Considerations
-
-1. **Database Operations**
-   - Transactions for atomic updates
-   - Prepared statements (cached by sql.js)
-   - Indexed foreign keys
-
-2. **Frontend**
-   - Code splitting (React.lazy - future enhancement)
-   - CSS Modules (scoped, optimized)
-   - Vite HMR for development
-
-3. **API**
-   - Parallel requests where possible
-   - Minimal data transfer (only needed fields)
-   - Efficient queries with JOINs
-
-4. **State Management**
-   - React Context for auth (global)
-   - Local state for page-specific data
-   - Automatic re-fetching on actions

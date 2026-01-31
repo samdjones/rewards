@@ -5,7 +5,7 @@ import {
   createChild,
   updateChild,
   deleteChild,
-  adjustPoints
+  adjustPoints,
 } from '../controllers/childrenController.js';
 
 const router = express.Router();
