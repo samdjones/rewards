@@ -12,6 +12,7 @@ import {
   removeMember,
   getInviteCode,
   regenerateInviteCode,
+  resetFamilyHistory,
 } from '../controllers/familyController.js';
 
 const router = express.Router();
@@ -34,5 +35,8 @@ router.delete('/current/members/:userId', requireFamilyAdmin, removeMember);
 // Invite code management
 router.get('/current/invite-code', requireFamilyAdmin, getInviteCode);
 router.post('/current/invite-code/regenerate', requireFamilyAdmin, regenerateInviteCode);
+
+// Reset history
+router.post('/current/reset-history', requireFamilyAdmin, resetFamilyHistory);
 
 export default router;

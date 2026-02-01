@@ -69,6 +69,28 @@
   font-size: 1rem;
 }
 
+.resetBtn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 0.75rem;
+}
+
+.resetBtn:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.resetBtn:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

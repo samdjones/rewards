@@ -147,5 +147,18 @@ export const familiesAPI = {
       throw new Error(data.error || 'Failed to regenerate invite code');
     }
     return res.json();
+  },
+
+  // Reset all history (admin only)
+  resetHistory: async () => {
+    const res = await fetch(`${API_URL}/families/current/reset-history`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to reset history');
+    }
+    return res.json();
   }
 };

@@ -108,6 +108,20 @@ const FamilySettingsPage = () => {
     }
   };
 
+  const handleResetHistory = async () => {
+    if (!confirm('Are you sure you want to reset all history? This will:\n\n• Set all kids\' points to 0\n• Clear all task completion history\n• Clear all reward redemption history\n\nThis cannot be undone!')) return;
+
+    try {
+      setActionLoading(true);
+      await familiesAPI.resetHistory();
+      alert('All history has been reset successfully.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
@@ -217,6 +231,22 @@ const FamilySettingsPage = () => {
               Leave Family
             </button>
           </div>
+
+          {isAdmin && (
+            <div className={styles.dangerItem}>
+              <div>
+                <strong>Reset All History</strong>
+                <p>Reset all points to zero and clear task completion and reward redemption history.</p>
+              </div>
+              <button
+                onClick={handleResetHistory}
+                className={styles.btnDanger}
+                disabled={actionLoading}
+              >
+                Reset History
+              </button>
+            </div>
+          )}
 
           {isAdmin && (
             <div className={styles.dangerItem}>

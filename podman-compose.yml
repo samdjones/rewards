@@ -1,0 +1,17 @@
+version: "3"
+services:
+  rewards:
+    build: .
+    container_name: rewards-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - rewards-data:/data
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
+      - DATABASE_PATH=/data/database.db
+    restart: unless-stopped
+
+volumes:
+  rewards-data:

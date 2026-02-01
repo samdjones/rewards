@@ -352,3 +352,43 @@ export const regenerateInviteCode = (req: Request, res: Response): void => {
 
   res.json({ invite_code: inviteCode });
 };
+
+// Reset all history (admin only) - clears completions, redemptions, adjustments, and resets points
+export const resetFamilyHistory = (req: Request, res: Response): void => {
+  try {
+    const transaction = db.transaction(() => {
+      // Delete all task_completions for family's children
+      db.prepare(
+        `DELETE FROM task_completions WHERE child_id IN (
+          SELECT id FROM children WHERE family_id = ?
+        )`
+      ).run(req.familyId);
+
+      // Delete all redemptions for family's children
+      db.prepare(
+        `DELETE FROM redemptions WHERE child_id IN (
+          SELECT id FROM children WHERE family_id = ?
+        )`
+      ).run(req.familyId);
+
+      // Delete all point_adjustments for family's children
+      db.prepare(
+        `DELETE FROM point_adjustments WHERE child_id IN (
+          SELECT id FROM children WHERE family_id = ?
+        )`
+      ).run(req.familyId);
+
+      // Reset current_points to 0 for all children in family
+      db.prepare(
+        'UPDATE children SET current_points = 0 WHERE family_id = ?'
+      ).run(req.familyId);
+    });
+
+    transaction();
+
+    res.json({ message: 'All history has been reset successfully' });
+  } catch (error) {
+    console.error('Reset family history error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};

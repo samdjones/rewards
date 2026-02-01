@@ -15,7 +15,11 @@
     "client": "npm run dev -w client",
     "test": "npm test -w server",
     "typecheck": "npm run typecheck -w server",
-    "build": "npm run build:shared && npm run build -w server"
+    "build": "npm run build:shared && npm run build -w server",
+    "build:client": "npm run build -w client",
+    "build:all": "npm run build:shared && npm run build:client && npm run build -w server && npm run copy-client",
+    "copy-client": "mkdir -p server/dist/public && cp -r client/dist/* server/dist/public/",
+    "start": "node server/dist/server.js"
   },
   "keywords": [
     "rewards",

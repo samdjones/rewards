@@ -38,6 +38,19 @@ const ChildDetailPage = () => {
     return <div className={styles.loading}>Loading...</div>;
   }
 
+  const handleResetPoints = async () => {
+    if (!confirm(`Are you sure you want to reset ${child.name}'s points to zero? This will deduct ${child.current_points} points.`)) {
+      return;
+    }
+
+    try {
+      await childrenAPI.adjustPoints(id, -child.current_points, 'Points reset to zero');
+      loadData();
+    } catch (err) {
+      alert('Failed to reset points');
+    }
+  };
+
   if (!child || !stats) {
     return <div className={styles.error}>Child not found</div>;
   }
@@ -64,6 +77,13 @@ const ChildDetailPage = () => {
             <span className={styles.pointsValue}>{child.current_points}</span>
             <span className={styles.pointsLabel}>current points</span>
           </div>
+          <button
+            onClick={handleResetPoints}
+            className={styles.resetBtn}
+            disabled={child.current_points === 0}
+          >
+            Reset Points
+          </button>
         </div>
       </div>
 

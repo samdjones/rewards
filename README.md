@@ -64,7 +64,52 @@ rewards/
 └── README.md
 ```
 
-## Setup Instructions
+## Quick Start (Production with Podman)
+
+The easiest way to run the app is with Podman (or Docker):
+
+```bash
+# Build the container
+podman build -t rewards-app .
+
+# Run with persistent database
+podman run -d \
+  --name rewards-app \
+  -p 3000:3000 \
+  -v rewards-data:/data \
+  -e JWT_SECRET="your-secret-key-here" \
+  rewards-app
+```
+
+Access the app at http://localhost:3000
+
+### Using Podman Compose
+
+```bash
+# Set your JWT secret
+export JWT_SECRET="your-secret-key-here"
+
+# Start the app
+podman-compose up -d
+
+# View logs
+podman logs -f rewards-app
+
+# Stop
+podman-compose down
+```
+
+### Updating to a New Version
+
+Your data is stored in a persistent volume, so it survives container updates:
+
+```bash
+podman-compose down
+podman-compose build --no-cache
+podman-compose up -d
+```
+
+## Development Setup
 
 ### Prerequisites
 
@@ -87,7 +132,9 @@ This installs dependencies for all workspaces (shared, server, client).
 npm run build:shared
 ```
 
-### Running the Application
+### Running for Development
+
+Development uses two servers for hot reload:
 
 1. **Start the Backend Server**
 
@@ -95,24 +142,23 @@ npm run build:shared
 npm run server
 ```
 
-The server will start on http://localhost:3000
+The API server will start on http://localhost:3000
 
 2. **Start the Frontend Development Server**
 
 In a new terminal:
 
 ```bash
-cd client
-npm run dev
+npm run client
 ```
 
-The frontend will start on http://localhost:5173
+The frontend will start on http://localhost:5173 with hot module replacement.
 
 3. **Access the Application**
 
 Open your browser and navigate to http://localhost:5173
 
-## Development Commands
+### Development Commands
 
 ```bash
 # Install all dependencies
@@ -124,14 +170,20 @@ npm run build:shared
 # Start server with hot reload
 npm run server
 
+# Start client with hot reload
+npm run client
+
 # Run server tests
 npm test
 
 # Type check server
 npm run typecheck -w server
 
-# Start client dev server
-cd client && npm run dev
+# Build everything for production
+npm run build:all
+
+# Start production server (after build:all)
+npm start
 ```
 
 ## Family System
@@ -219,21 +271,72 @@ npm test -- --coverage
 - Tasks API tests (20 tests)
 - Rewards API tests (21 tests)
 
-## Database Schema
+## Database
 
-The application uses SQLite with the following tables:
+### Technology
 
-- **users**: Parent accounts
+The application uses **SQLite** via **sql.js**, a pure JavaScript implementation of SQLite. This means:
+
+- No native dependencies or compilation required
+- Database runs entirely in Node.js memory
+- Automatically persists to disk after each write
+- Works seamlessly in containers
+
+### Database Location
+
+| Environment | Location |
+|-------------|----------|
+| Development | `./database.db` in project root |
+| Production (Container) | `/data/database.db` (mount a volume to `/data`) |
+
+The location can be configured via the `DATABASE_PATH` environment variable.
+
+### Schema
+
+The database includes the following tables:
+
+- **users**: Parent accounts with email/password
 - **families**: Family groups with invite codes
-- **family_members**: Links users to families with roles
-- **children**: Child profiles (scoped by family)
-- **tasks**: Available tasks (scoped by family)
-- **task_completions**: History of completed tasks
-- **rewards**: Available rewards (scoped by family)
+- **family_members**: Links users to families with roles (admin/member)
+- **children**: Child profiles with point balances (scoped by family)
+- **tasks**: Available tasks with point values and repeat schedules (scoped by family)
+- **task_completions**: History of completed tasks with timestamps
+- **rewards**: Available rewards with point costs (scoped by family)
 - **redemptions**: History of redeemed rewards
-- **point_adjustments**: Manual point adjustments
+- **point_adjustments**: Manual point adjustments with reasons
 
 See `server/src/db/schema.sql` for the complete schema.
+
+### Migrations
+
+Database migrations run automatically on server startup. The app checks for missing columns/tables and adds them while preserving existing data. This means you can update the app without losing your data.
+
+### Backup
+
+To backup your database:
+
+```bash
+# If running with Podman
+podman cp rewards-app:/data/database.db ./backup.db
+
+# If running locally
+cp database.db backup.db
+```
+
+### Reset
+
+To reset all points and history without deleting kids/tasks/rewards, use the "Reset All History" button in Family Settings (admin only).
+
+To completely reset the database, delete the `database.db` file (or the volume) and restart the app.
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | `3000` |
+| `JWT_SECRET` | Secret key for JWT tokens | `dev-secret-key...` (change in production!) |
+| `DATABASE_PATH` | Path to SQLite database file | `database.db` |
+| `NODE_ENV` | Environment (`development` or `production`) | `development` |
 
 ## Security Features
 

@@ -1,0 +1,13 @@
+node_modules
+*/node_modules
+*/*/node_modules
+*.db
+.git
+.gitignore
+.env
+*.log
+server/dist
+client/dist
+packages/shared/dist
+.claude
+*.md

@@ -47,12 +47,12 @@ export const rewardsAPI = {
     return res.json();
   },
 
-  redeem: async (id, child_id, notes) => {
+  redeem: async (id, child_ids, notes) => {
     const res = await fetch(`${API_URL}/rewards/${id}/redeem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ child_id, notes })
+      body: JSON.stringify({ child_ids, notes })
     });
     if (!res.ok) {
       const errorData = await res.json();

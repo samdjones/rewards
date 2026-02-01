@@ -138,10 +138,15 @@ export const deleteReward = (req: Request, res: Response): void => {
 export const redeemReward = (req: Request, res: Response): void => {
   try {
     const { id } = req.params;
-    const { child_id, notes } = req.body;
+    const { child_id, child_ids, notes } = req.body;
 
-    if (!child_id) {
-      res.status(400).json({ error: 'child_id is required' });
+    // Support both single child_id and array of child_ids
+    const childIdList: number[] = child_ids
+      ? (Array.isArray(child_ids) ? child_ids : [child_ids])
+      : (child_id ? [child_id] : []);
+
+    if (childIdList.length === 0) {
+      res.status(400).json({ error: 'At least one child_id is required' });
       return;
     }
 
@@ -154,44 +159,54 @@ export const redeemReward = (req: Request, res: Response): void => {
       return;
     }
 
-    const child = db
-      .prepare<Child>('SELECT * FROM children WHERE id = ? AND family_id = ?')
-      .get(child_id, req.familyId);
+    // Validate all children exist and have sufficient points
+    const children: Child[] = [];
+    for (const cid of childIdList) {
+      const child = db
+        .prepare<Child>('SELECT * FROM children WHERE id = ? AND family_id = ?')
+        .get(cid, req.familyId);
 
-    if (!child) {
-      res.status(404).json({ error: 'Child not found' });
-      return;
-    }
+      if (!child) {
+        res.status(404).json({ error: `Child with id ${cid} not found` });
+        return;
+      }
 
-    if (child.current_points < reward.point_cost) {
-      res.status(400).json({
-        error: 'Insufficient points',
-        required: reward.point_cost,
-        available: child.current_points,
-      });
-      return;
+      if (child.current_points < reward.point_cost) {
+        res.status(400).json({
+          error: `${child.name} has insufficient points`,
+          required: reward.point_cost,
+          available: child.current_points,
+        });
+        return;
+      }
+
+      children.push(child);
     }
 
     const transaction = db.transaction(() => {
-      db.prepare(
-        'INSERT INTO redemptions (reward_id, child_id, points_spent, notes) VALUES (?, ?, ?, ?)'
-      ).run(id, child_id, reward.point_cost, notes || null);
+      for (const cid of childIdList) {
+        db.prepare(
+          'INSERT INTO redemptions (reward_id, child_id, points_spent, notes) VALUES (?, ?, ?, ?)'
+        ).run(id, cid, reward.point_cost, notes || null);
 
-      db.prepare(
-        'UPDATE children SET current_points = current_points - ? WHERE id = ?'
-      ).run(reward.point_cost, child_id);
+        db.prepare(
+          'UPDATE children SET current_points = current_points - ? WHERE id = ?'
+        ).run(reward.point_cost, cid);
+      }
     });
 
     transaction();
 
-    const updatedChild = db
-      .prepare<Child>('SELECT * FROM children WHERE id = ?')
-      .get(child_id);
+    // Return updated children
+    const updatedChildren = childIdList.map(cid =>
+      db.prepare<Child>('SELECT * FROM children WHERE id = ?').get(cid)
+    );
 
     res.json({
       message: 'Reward redeemed successfully',
-      child: updatedChild,
+      children: updatedChildren,
       points_spent: reward.point_cost,
+      total_points_spent: reward.point_cost * childIdList.length,
     });
   } catch (error) {
     console.error('Redeem reward error:', error);

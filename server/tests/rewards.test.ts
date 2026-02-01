@@ -292,7 +292,7 @@ describe('Rewards API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.points_spent).toBe(30);
-      expect(res.body.child.current_points).toBe(70); // 100 - 30
+      expect(res.body.children[0].current_points).toBe(70); // 100 - 30
     });
 
     it('should allow multiple redemptions', async () => {
@@ -329,7 +329,7 @@ describe('Rewards API', () => {
         .send({ child_id: childId });
 
       expect(res.status).toBe(200);
-      expect(res.body.child.current_points).toBe(60); // 100 - 20 - 20
+      expect(res.body.children[0].current_points).toBe(60); // 100 - 20 - 20
     });
 
     it('should return 400 if child has insufficient points', async () => {
@@ -350,7 +350,7 @@ describe('Rewards API', () => {
         .send({ child_id: childId });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain('Insufficient');
+      expect(res.body.error).toContain('insufficient points');
       expect(res.body.required).toBe(100);
       expect(res.body.available).toBe(0);
     });

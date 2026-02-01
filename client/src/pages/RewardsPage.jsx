@@ -19,7 +19,7 @@ const RewardsPage = () => {
     point_cost: '',
     category: ''
   });
-  const [redeemData, setRedeemData] = useState({ child_id: '', notes: '' });
+  const [redeemData, setRedeemData] = useState({ selectedChildIds: [], notes: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -64,16 +64,33 @@ const RewardsPage = () => {
     e.preventDefault();
     setError('');
 
+    if (redeemData.selectedChildIds.length === 0) {
+      setError('Please select at least one kid');
+      return;
+    }
+
     try {
-      await rewardsAPI.redeem(selectedReward.id, redeemData.child_id, redeemData.notes);
+      await rewardsAPI.redeem(selectedReward.id, redeemData.selectedChildIds, redeemData.notes);
       setShowRedeemModal(false);
-      setRedeemData({ child_id: '', notes: '' });
+      setRedeemData({ selectedChildIds: [], notes: '' });
       setSelectedReward(null);
       alert('Reward redeemed successfully!');
       loadData();
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const toggleChildSelection = (childId) => {
+    setRedeemData(prev => {
+      const isSelected = prev.selectedChildIds.includes(childId);
+      return {
+        ...prev,
+        selectedChildIds: isSelected
+          ? prev.selectedChildIds.filter(id => id !== childId)
+          : [...prev.selectedChildIds, childId]
+      };
+    });
   };
 
   const handleDelete = async (id) => {
@@ -89,6 +106,7 @@ const RewardsPage = () => {
 
   const openRedeemModal = (reward) => {
     setSelectedReward(reward);
+    setRedeemData({ selectedChildIds: [], notes: '' });
     setShowRedeemModal(true);
   };
 
@@ -121,11 +139,6 @@ const RewardsPage = () => {
     } catch (err) {
       setError(err.message);
     }
-  };
-
-  const getChildPoints = (childId) => {
-    const child = children.find(c => c.id === parseInt(childId));
-    return child ? child.current_points : 0;
   };
 
   if (loading) {
@@ -231,35 +244,32 @@ const RewardsPage = () => {
           {error && <div className={styles.error}>{error}</div>}
           <form onSubmit={handleRedeem} className={styles.form}>
             <div className={styles.formGroup}>
-              <label htmlFor="child">Select Child *</label>
-              <select
-                id="child"
-                value={redeemData.child_id}
-                onChange={(e) => setRedeemData({ ...redeemData, child_id: e.target.value })}
-                required
-              >
-                <option value="">Choose a child...</option>
-                {children.map(child => (
-                  <option key={child.id} value={child.id}>
-                    {child.name} ({child.current_points} pts)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {redeemData.child_id && (
-              <div className={styles.pointsCheck}>
-                {getChildPoints(redeemData.child_id) >= selectedReward.point_cost ? (
-                  <span className={styles.sufficient}>
-                    ✓ Sufficient points
-                  </span>
-                ) : (
-                  <span className={styles.insufficient}>
-                    ✗ Not enough points (need {selectedReward.point_cost})
-                  </span>
-                )}
+              <label>Select Kids *</label>
+              <div className={styles.childCheckboxes}>
+                {children.map(child => {
+                  const hasEnoughPoints = child.current_points >= selectedReward.point_cost;
+                  const isSelected = redeemData.selectedChildIds.includes(child.id);
+                  return (
+                    <label
+                      key={child.id}
+                      className={`${styles.childCheckbox} ${!hasEnoughPoints ? styles.insufficientChild : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleChildSelection(child.id)}
+                        disabled={!hasEnoughPoints}
+                      />
+                      <span className={styles.childName}>{child.name}</span>
+                      <span className={styles.childPoints}>
+                        {child.current_points} pts
+                        {!hasEnoughPoints && <span className={styles.needMore}> (need {selectedReward.point_cost})</span>}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
-            )}
+            </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="notes">Notes (optional)</label>
@@ -271,9 +281,11 @@ const RewardsPage = () => {
               />
             </div>
 
-            <div className={styles.costInfo}>
-              Will deduct {selectedReward.point_cost} points
-            </div>
+            {redeemData.selectedChildIds.length > 0 && (
+              <div className={styles.costInfo}>
+                Will deduct {selectedReward.point_cost} points from {redeemData.selectedChildIds.length} kid{redeemData.selectedChildIds.length > 1 ? 's' : ''} ({selectedReward.point_cost * redeemData.selectedChildIds.length} total)
+              </div>
+            )}
 
             <button type="submit" className={styles.submitBtn}>Redeem Reward</button>
           </form>

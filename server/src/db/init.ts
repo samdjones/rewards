@@ -6,7 +6,7 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DB_PATH = 'database.db';
+const DB_PATH = process.env.DATABASE_PATH || 'database.db';
 
 let db: Database | null = null;
 
