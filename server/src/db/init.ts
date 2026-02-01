@@ -148,6 +148,55 @@ const runMigrations = (): void => {
 
     saveDatabase();
   }
+
+  // Migration: Replace is_recurring with repeat_schedule
+  const tasksInfo = db.exec('PRAGMA table_info(tasks)');
+  const tasksCols =
+    tasksInfo.length > 0
+      ? tasksInfo[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!tasksCols.includes('repeat_schedule')) {
+    console.log('Running migration: Adding repeat_schedule column...');
+
+    // Add new column
+    db.run('ALTER TABLE tasks ADD COLUMN repeat_schedule TEXT DEFAULT "none"');
+
+    // Migrate existing data: is_recurring = 1 becomes 'daily'
+    if (tasksCols.includes('is_recurring')) {
+      db.run('UPDATE tasks SET repeat_schedule = "daily" WHERE is_recurring = 1');
+      db.run('UPDATE tasks SET repeat_schedule = "none" WHERE is_recurring = 0 OR is_recurring IS NULL');
+    }
+
+    console.log('Migration completed: repeat_schedule added');
+    saveDatabase();
+  }
+
+  // Migration: Add sort_order column to tasks
+  const tasksInfoForSort = db.exec('PRAGMA table_info(tasks)');
+  const tasksColsForSort =
+    tasksInfoForSort.length > 0
+      ? tasksInfoForSort[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!tasksColsForSort.includes('sort_order')) {
+    console.log('Running migration: Adding sort_order column...');
+
+    // Add new column
+    db.run('ALTER TABLE tasks ADD COLUMN sort_order INTEGER DEFAULT 0');
+
+    // Initialize sort_order based on creation order (oldest first = lowest sort_order)
+    db.run(`
+      UPDATE tasks SET sort_order = (
+        SELECT COUNT(*) FROM tasks t2
+        WHERE t2.family_id = tasks.family_id
+        AND t2.created_at < tasks.created_at
+      )
+    `);
+
+    console.log('Migration completed: sort_order added');
+    saveDatabase();
+  }
 };
 
 const initDatabase = async (): Promise<Database> => {

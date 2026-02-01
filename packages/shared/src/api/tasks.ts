@@ -1,5 +1,6 @@
 import type { Task } from '../entities/task.js';
 import type { Child } from '../entities/child.js';
+import type { RepeatSchedule } from '../enums.js';
 
 // Request types
 export interface CreateTaskRequest {
@@ -7,7 +8,7 @@ export interface CreateTaskRequest {
   description?: string;
   point_value: number;
   category?: string;
-  is_recurring?: boolean;
+  repeat_schedule?: RepeatSchedule;
 }
 
 export interface UpdateTaskRequest {
@@ -15,12 +16,16 @@ export interface UpdateTaskRequest {
   description?: string;
   point_value?: number;
   category?: string;
-  is_recurring?: boolean;
+  repeat_schedule?: RepeatSchedule;
 }
 
 export interface CompleteTaskRequest {
   child_id: number;
   notes?: string;
+}
+
+export interface ReorderTasksRequest {
+  task_ids: number[];
 }
 
 // Response types

@@ -103,6 +103,20 @@
   background-color: #7c3aed;
 }
 
+.editBtn {
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.editBtn:hover {
+  background-color: #d97706;
+}
+
 .deleteBtn {
   background-color: #ef4444;
   color: white;
@@ -236,7 +250,7 @@
     width: 100%;
   }
 
-  .redeemBtn, .deleteBtn {
+  .redeemBtn, .editBtn, .deleteBtn {
     flex: 1;
   }
 }

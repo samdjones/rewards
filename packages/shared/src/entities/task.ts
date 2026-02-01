@@ -1,3 +1,5 @@
+import type { RepeatSchedule } from '../enums.js';
+
 export interface Task {
   id: number;
   family_id: number;
@@ -6,7 +8,8 @@ export interface Task {
   description: string | null;
   point_value: number;
   category: string | null;
-  is_recurring: number; // SQLite boolean (0 or 1)
+  repeat_schedule: RepeatSchedule;
+  sort_order: number;
   created_at: string;
 }
 

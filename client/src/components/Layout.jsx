@@ -40,6 +40,12 @@ const Layout = ({ children }) => {
             Dashboard
           </Link>
           <Link
+            to="/kids"
+            className={isActive("/kids") ? styles.activeLink : ""}
+          >
+            Kids
+          </Link>
+          <Link
             to="/tasks"
             className={isActive("/tasks") ? styles.activeLink : ""}
           >

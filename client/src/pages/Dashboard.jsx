@@ -1,134 +1,199 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { childrenAPI } from '../api/children';
-import ChildCard from '../components/ChildCard';
-import Modal from '../components/Modal';
+import { tasksAPI } from '../api/tasks';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
   const [children, setChildren] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState({});
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', age: '', avatar_color: '#3B82F6' });
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return new Date().toISOString().split('T')[0];
+  });
+
+  const getYesterday = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const getToday = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  const isToday = selectedDate === getToday();
+  const isYesterday = selectedDate === getYesterday();
 
   useEffect(() => {
-    loadChildren();
+    loadData();
   }, []);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      loadCompletions();
+    }
+  }, [selectedDate, tasks]);
+
+  const loadData = async () => {
+    try {
+      const [childrenData, tasksData] = await Promise.all([
+        childrenAPI.getAll(),
+        tasksAPI.getAll()
+      ]);
+      setChildren(childrenData.children);
+      setTasks(tasksData.tasks);
+    } catch (err) {
+      setError('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCompletions = async () => {
+    try {
+      const data = await tasksAPI.getCompletionsForDate(selectedDate);
+      const completionMap = {};
+      data.completions.forEach(c => {
+        completionMap[`${c.task_id}-${c.child_id}`] = true;
+      });
+      setCompletedTasks(completionMap);
+    } catch (err) {
+      console.error('Failed to load completions:', err);
+    }
+  };
 
   const loadChildren = async () => {
     try {
       const data = await childrenAPI.getAll();
       setChildren(data.children);
     } catch (err) {
-      setError('Failed to load children');
-    } finally {
-      setLoading(false);
+      setError('Failed to load data');
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  const getTasksForDate = (date) => {
+    const d = new Date(date + 'T12:00:00');
+    const dayOfWeek = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    return tasks.filter(task => {
+      if (task.repeat_schedule === 'daily') return true;
+      if (task.repeat_schedule === 'weekdays' && !isWeekend) return true;
+      if (task.repeat_schedule === 'weekends' && isWeekend) return true;
+      return false;
+    });
+  };
+
+  const handleToggleComplete = async (taskId, childId) => {
+    const key = `${taskId}-${childId}`;
 
     try {
-      await childrenAPI.create({
-        name: formData.name,
-        age: formData.age ? parseInt(formData.age) : null,
-        avatar_color: formData.avatar_color
-      });
-      setShowModal(false);
-      setFormData({ name: '', age: '', avatar_color: '#3B82F6' });
+      if (completedTasks[key]) {
+        await tasksAPI.uncompleteForDate(taskId, childId, selectedDate);
+        setCompletedTasks(prev => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+      } else {
+        await tasksAPI.completeForDate(taskId, childId, selectedDate);
+        setCompletedTasks(prev => ({ ...prev, [key]: true }));
+      }
       loadChildren();
     } catch (err) {
-      setError(err.message);
+      alert(err.message || 'Failed to update task');
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this child profile? All associated data will be removed.')) {
-      return;
-    }
+  const getDailyPointsForChild = (childId) => {
+    let points = 0;
+    getTasksForDate(selectedDate).forEach(task => {
+      if (completedTasks[`${task.id}-${childId}`]) {
+        points += task.point_value;
+      }
+    });
+    return points;
+  };
 
-    try {
-      await childrenAPI.delete(id);
-      loadChildren();
-    } catch (err) {
-      alert('Failed to delete child');
-    }
+  const formatDateDisplay = (dateStr) => {
+    const d = new Date(dateStr + 'T12:00:00');
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return d.toLocaleDateString('en-US', options);
   };
 
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
+  const tasksForDate = getTasksForDate(selectedDate);
+
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
-        <h2>My Children</h2>
-        <button onClick={() => setShowModal(true)} className={styles.addBtn}>
-          + Add Child
+        <h2>Dashboard</h2>
+      </div>
+
+      <div className={styles.dateSelector}>
+        <button
+          className={`${styles.dateBtn} ${isYesterday ? styles.activeDateBtn : ''}`}
+          onClick={() => setSelectedDate(getYesterday())}
+        >
+          Yesterday
         </button>
+        <button
+          className={`${styles.dateBtn} ${isToday ? styles.activeDateBtn : ''}`}
+          onClick={() => setSelectedDate(getToday())}
+        >
+          Today
+        </button>
+      </div>
+
+      <div className={styles.currentDate}>
+        {formatDateDisplay(selectedDate)}
       </div>
 
       {children.length === 0 ? (
         <div className={styles.empty}>
-          <p>No children added yet. Click "Add Child" to get started!</p>
+          <p>No kids added yet. Go to the Kids tab to add your first kid!</p>
+        </div>
+      ) : tasksForDate.length === 0 ? (
+        <div className={styles.empty}>
+          <p>No tasks scheduled for {isToday ? 'today' : 'this day'}. Go to the Tasks tab to add recurring tasks!</p>
         </div>
       ) : (
-        <div className={styles.childrenGrid}>
-          {children.map(child => (
-            <ChildCard
-              key={child.id}
-              child={child}
-              onDelete={handleDelete}
-              onClick={() => navigate(`/children/${child.id}`)}
-            />
-          ))}
+        <div className={styles.todaysTasks}>
+          <h3>{isToday ? "Today's Tasks" : "Tasks"}</h3>
+          <div className={styles.taskMatrix} style={{ '--child-count': children.length }}>
+            <div className={styles.taskMatrixHeader}>
+              <div className={styles.taskNameHeader}>Task</div>
+              {children.map(child => (
+                <div key={child.id} className={styles.childHeader}>
+                  <span style={{ color: child.avatar_color }}>{child.name}</span>
+                  <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} pts</span>
+                </div>
+              ))}
+            </div>
+            {tasksForDate.map(task => (
+              <div key={task.id} className={styles.taskRow}>
+                <div className={styles.taskName}>
+                  {task.name}
+                  <span className={styles.taskPoints}>{task.point_value} pts</span>
+                </div>
+                {children.map(child => (
+                  <div key={child.id} className={styles.taskCheckbox}>
+                    <input
+                      type="checkbox"
+                      checked={!!completedTasks[`${task.id}-${child.id}`]}
+                      onChange={() => handleToggleComplete(task.id, child.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-      )}
-
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)} title="Add Child">
-          {error && <div className={styles.error}>{error}</div>}
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.formGroup}>
-              <label htmlFor="name">Name *</label>
-              <input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="age">Age (optional)</label>
-              <input
-                id="age"
-                type="number"
-                min="0"
-                max="18"
-                value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="color">Avatar Color</label>
-              <input
-                id="color"
-                type="color"
-                value={formData.avatar_color}
-                onChange={(e) => setFormData({ ...formData, avatar_color: e.target.value })}
-              />
-            </div>
-
-            <button type="submit" className={styles.submitBtn}>Add Child</button>
-          </form>
-        </Modal>
       )}
     </div>
   );

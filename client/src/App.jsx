@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import FamilySetupPage from "./pages/FamilySetupPage";
 import FamilySettingsPage from "./pages/FamilySettingsPage";
 import Dashboard from "./pages/Dashboard";
+import KidsPage from "./pages/KidsPage";
 import TasksPage from "./pages/TasksPage";
 import RewardsPage from "./pages/RewardsPage";
 import ChildDetailPage from "./pages/ChildDetailPage";
@@ -42,6 +43,14 @@ function App() {
               element={
                 <FamilyGuard>
                   <Dashboard />
+                </FamilyGuard>
+              }
+            />
+            <Route
+              path="/kids"
+              element={
+                <FamilyGuard>
+                  <KidsPage />
                 </FamilyGuard>
               }
             />

@@ -14,24 +14,122 @@
   color: #1f2937;
 }
 
-.addBtn {
-  background-color: #3B82F6;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
+.dateSelector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.dateBtn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  background: white;
   border-radius: 6px;
-  font-weight: 600;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.addBtn:hover {
-  background-color: #2563eb;
+.dateBtn:hover {
+  background: #f3f4f6;
 }
 
-.childrenGrid {
+.activeDateBtn {
+  background: #3B82F6;
+  color: white;
+  border-color: #3B82F6;
+}
+
+.activeDateBtn:hover {
+  background: #2563eb;
+}
+
+.currentDate {
+  font-size: 1.125rem;
+  color: #374151;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.todaysTasks {
+  background: white;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.todaysTasks h3 {
+  font-size: 1.125rem;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.taskMatrix {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.taskMatrixHeader {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: 1fr repeat(var(--child-count, 2), minmax(80px, 100px));
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.taskNameHeader {
+  color: #6b7280;
+}
+
+.childHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dailyPoints {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.taskRow {
+  display: grid;
+  grid-template-columns: 1fr repeat(var(--child-count, 2), minmax(80px, 100px));
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+}
+
+.taskName {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.taskPoints {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.taskCheckbox {
+  display: flex;
+  justify-content: center;
+}
+
+.taskCheckbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.taskCheckbox input[type="checkbox"]:checked {
+  accent-color: #10b981;
 }
 
 .empty {
@@ -39,6 +137,9 @@
   padding: 3rem;
   color: #6b7280;
   font-size: 1.1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .loading {
@@ -48,71 +149,10 @@
   color: #6b7280;
 }
 
-.error {
-  background-color: #fee;
-  border: 1px solid #fcc;
-  color: #c00;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.formGroup label {
-  font-weight: 500;
-  color: #374151;
-  font-size: 0.9rem;
-}
-
-.formGroup input, .formGroup select {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-.formGroup input:focus, .formGroup select:focus {
-  outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.submitBtn {
-  background-color: #3B82F6;
-  color: white;
-  border: none;
-  padding: 0.875rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.submitBtn:hover {
-  background-color: #2563eb;
-}
-
 @media (max-width: 768px) {
   .header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
-  }
-
-  .childrenGrid {
-    grid-template-columns: 1fr;
   }
 }

@@ -28,6 +28,46 @@
   background-color: #2563eb;
 }
 
+.pointsSummary {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.pointsSummary h3 {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dayName {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.dayPoints {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
 .tasksList {
   display: flex;
   flex-direction: column;
@@ -43,6 +83,41 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  cursor: grab;
+  transition: box-shadow 0.2s, opacity 0.2s, border-color 0.2s;
+  border: 2px solid transparent;
+}
+
+.taskCard:active {
+  cursor: grabbing;
+}
+
+.taskCard.dragging {
+  opacity: 0.5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.taskCard.dragOver {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.dragHandle {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  color: #9ca3af;
+  cursor: grab;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.gripIcon {
+  font-size: 1rem;
+  letter-spacing: -3px;
+  user-select: none;
 }
 
 .taskInfo {
@@ -109,6 +184,20 @@
 
 .completeBtn:hover {
   background-color: #059669;
+}
+
+.editBtn {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.editBtn:hover {
+  background-color: #4b5563;
 }
 
 .deleteBtn {
@@ -233,6 +322,12 @@
   .taskCard {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .dragHandle {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
   }
 
   .taskActions {

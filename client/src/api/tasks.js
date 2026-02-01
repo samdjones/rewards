@@ -59,5 +59,64 @@ export const tasksAPI = {
       throw new Error(errorData.error || 'Failed to complete task');
     }
     return res.json();
+  },
+
+  reorder: async (taskIds) => {
+    const res = await fetch(`${API_URL}/tasks/reorder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ task_ids: taskIds })
+    });
+    if (!res.ok) throw new Error('Failed to reorder tasks');
+    return res.json();
+  },
+
+  uncomplete: async (id, child_id) => {
+    const res = await fetch(`${API_URL}/tasks/${id}/uncomplete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ child_id })
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Failed to uncomplete task');
+    }
+    return res.json();
+  },
+
+  getCompletionsForDate: async (date) => {
+    const res = await fetch(`${API_URL}/tasks/completions?date=${date}`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Failed to fetch completions');
+    return res.json();
+  },
+
+  completeForDate: async (id, child_id, date) => {
+    const res = await fetch(`${API_URL}/tasks/${id}/complete-for-date`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ child_id, date })
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Failed to complete task');
+    }
+    return res.json();
+  },
+
+  uncompleteForDate: async (id, child_id, date) => {
+    const res = await fetch(`${API_URL}/tasks/${id}/uncomplete-for-date`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ child_id, date })
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Failed to uncomplete task');
+    }
+    return res.json();
   }
 };

@@ -49,7 +49,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT,
   point_value INTEGER NOT NULL,
   category TEXT,
-  is_recurring BOOLEAN DEFAULT 0,
+  repeat_schedule TEXT DEFAULT 'none',
+  sort_order INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL

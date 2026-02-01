@@ -10,7 +10,9 @@ const RewardsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
+  const [editingReward, setEditingReward] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -90,6 +92,37 @@ const RewardsPage = () => {
     setShowRedeemModal(true);
   };
 
+  const openEditModal = (reward) => {
+    setEditingReward(reward);
+    setFormData({
+      name: reward.name,
+      description: reward.description || '',
+      point_cost: reward.point_cost.toString(),
+      category: reward.category || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      await rewardsAPI.update(editingReward.id, {
+        name: formData.name,
+        description: formData.description,
+        point_cost: parseInt(formData.point_cost),
+        category: formData.category || null
+      });
+      setShowEditModal(false);
+      setEditingReward(null);
+      setFormData({ name: '', description: '', point_cost: '', category: '' });
+      loadData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const getChildPoints = (childId) => {
     const child = children.find(c => c.id === parseInt(childId));
     return child ? child.current_points : 0;
@@ -127,6 +160,9 @@ const RewardsPage = () => {
               <div className={styles.rewardActions}>
                 <button onClick={() => openRedeemModal(reward)} className={styles.redeemBtn}>
                   Redeem
+                </button>
+                <button onClick={() => openEditModal(reward)} className={styles.editBtn}>
+                  Edit
                 </button>
                 <button onClick={() => handleDelete(reward.id)} className={styles.deleteBtn}>
                   Delete
@@ -240,6 +276,59 @@ const RewardsPage = () => {
             </div>
 
             <button type="submit" className={styles.submitBtn}>Redeem Reward</button>
+          </form>
+        </Modal>
+      )}
+
+      {showEditModal && editingReward && (
+        <Modal onClose={() => setShowEditModal(false)} title="Edit Reward">
+          {error && <div className={styles.error}>{error}</div>}
+          <form onSubmit={handleEdit} className={styles.form}>
+            <div className={styles.formGroup}>
+              <label htmlFor="edit-name">Reward Name *</label>
+              <input
+                id="edit-name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="edit-description">Description</label>
+              <textarea
+                id="edit-description"
+                rows="3"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="edit-point_cost">Point Cost *</label>
+              <input
+                id="edit-point_cost"
+                type="number"
+                min="1"
+                value={formData.point_cost}
+                onChange={(e) => setFormData({ ...formData, point_cost: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="edit-category">Category</label>
+              <input
+                id="edit-category"
+                type="text"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                placeholder="e.g., Toys, Activities, Treats"
+              />
+            </div>
+
+            <button type="submit" className={styles.submitBtn}>Save Changes</button>
           </form>
         </Modal>
       )}
