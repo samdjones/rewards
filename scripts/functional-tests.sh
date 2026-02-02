@@ -3,7 +3,8 @@ set -e
 
 CONTAINER_NAME="rewards-functional-test"
 IMAGE_NAME="rewards-app:test"
-BASE_URL="http://localhost:3000/api"
+TEST_PORT="${TEST_PORT:-13000}"
+BASE_URL="http://localhost:$TEST_PORT/api"
 COOKIE_JAR=$(mktemp)
 
 # Cleanup function
@@ -48,10 +49,10 @@ echo "Building container..."
 podman build -t "$IMAGE_NAME" . || { echo "FAIL: Container build failed"; exit 1; }
 
 # Start the container
-echo "Starting container..."
+echo "Starting container on port $TEST_PORT..."
 podman run -d \
   --name "$CONTAINER_NAME" \
-  -p 3000:3000 \
+  -p "$TEST_PORT:3000" \
   -e JWT_SECRET=test-secret-for-functional-tests \
   "$IMAGE_NAME" || { echo "FAIL: Container failed to start"; exit 1; }
 
