@@ -1,3 +1,4 @@
 - build new features or improve existing ones on a feature branch
+- update the documentation to reflect the changes
 - create a pull request to merge your changes into the main branch
 - review and test the changes before raising a pull request
