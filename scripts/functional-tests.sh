@@ -1,8 +1,22 @@
 #!/bin/bash
 set -e
 
+CONTAINER_NAME="rewards-functional-test"
+IMAGE_NAME="rewards-app:test"
 BASE_URL="http://localhost:3000/api"
 COOKIE_JAR=$(mktemp)
+
+# Cleanup function
+cleanup() {
+  rm -f "$COOKIE_JAR"
+  echo ""
+  echo "Stopping container..."
+  docker stop "$CONTAINER_NAME" 2>/dev/null || true
+  docker rm "$CONTAINER_NAME" 2>/dev/null || true
+}
+
+# Set trap to cleanup on exit
+trap cleanup EXIT
 
 # Helper function for API calls
 api() {
@@ -22,6 +36,45 @@ api() {
 }
 
 echo "=== Functional API Tests ==="
+echo ""
+
+# Stop any existing container with same name
+echo "Cleaning up any existing container..."
+docker stop "$CONTAINER_NAME" 2>/dev/null || true
+docker rm "$CONTAINER_NAME" 2>/dev/null || true
+
+# Build the container
+echo "Building container..."
+docker build -t "$IMAGE_NAME" . || { echo "FAIL: Container build failed"; exit 1; }
+
+# Start the container
+echo "Starting container..."
+docker run -d \
+  --name "$CONTAINER_NAME" \
+  -p 3000:3000 \
+  -e JWT_SECRET=test-secret-for-functional-tests \
+  "$IMAGE_NAME" || { echo "FAIL: Container failed to start"; exit 1; }
+
+# Wait for container to be ready
+echo -n "Waiting for container to be ready"
+for i in {1..30}; do
+  if curl -s "$BASE_URL/health" > /dev/null 2>&1; then
+    echo " ready!"
+    break
+  fi
+  echo -n "."
+  sleep 2
+  if [ $i -eq 30 ]; then
+    echo ""
+    echo "FAIL: Container failed to become ready"
+    docker logs "$CONTAINER_NAME"
+    exit 1
+  fi
+done
+
+echo ""
+echo "Running tests..."
+echo ""
 
 # Test 1: Health check
 echo -n "Health check... "
@@ -68,9 +121,6 @@ echo "PASS"
 echo -n "Verify logged out... "
 ME=$(api GET "/auth/me")
 echo "$ME" | grep -q "Unauthorized\|Not authenticated\|Authentication required" && echo "PASS" || { echo "FAIL: $ME"; exit 1; }
-
-# Cleanup
-rm -f "$COOKIE_JAR"
 
 echo ""
 echo "=== All functional tests passed! ==="

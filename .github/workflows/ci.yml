@@ -33,38 +33,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build container
-        run: docker build -t rewards-app:test .
-
-      - name: Start container
-        run: |
-          docker run -d \
-            --name rewards-test \
-            -p 3000:3000 \
-            -e JWT_SECRET=test-secret-for-ci \
-            rewards-app:test
-
-      - name: Wait for container to be ready
-        run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:3000/api/health > /dev/null; then
-              echo "Container is ready"
-              exit 0
-            fi
-            echo "Waiting for container... ($i/30)"
-            sleep 2
-          done
-          echo "Container failed to start"
-          docker logs rewards-test
-          exit 1
-
       - name: Run functional API tests
         run: ./scripts/functional-tests.sh
-
-      - name: Show container logs on failure
-        if: failure()
-        run: docker logs rewards-test
-
-      - name: Stop container
-        if: always()
-        run: docker stop rewards-test || true

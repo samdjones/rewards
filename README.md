@@ -273,17 +273,16 @@ npm test -- --coverage
 
 ### Functional API Tests
 
-The `scripts/functional-tests.sh` script runs end-to-end API tests against a running container:
+The `scripts/functional-tests.sh` script runs end-to-end API tests. It handles everything automatically:
+- Builds the container image
+- Stops any existing test container
+- Starts a fresh container
+- Runs all API tests
+- Cleans up on exit
 
 ```bash
-# Start a container first
-podman run -d --name rewards-test -p 3000:3000 -e JWT_SECRET=test rewards-app
-
-# Run functional tests
+# Just run it - handles everything
 ./scripts/functional-tests.sh
-
-# Clean up
-podman stop rewards-test && podman rm rewards-test
 ```
 
 The functional tests verify:
@@ -300,7 +299,7 @@ The project uses GitHub Actions for CI. The workflow runs on every push and pull
 ### CI Pipeline Stages
 
 1. **Unit Tests**: Installs dependencies, builds the shared package, and runs all Vitest tests
-2. **Functional API Tests**: Builds the Docker container, starts it, and runs the functional test script against the live API
+2. **Functional API Tests**: Runs the functional test script (which builds and tests the container)
 
 ### Viewing CI Results
 
@@ -308,18 +307,12 @@ Check the Actions tab in the GitHub repository to see workflow runs and results.
 
 ### Running CI Locally
 
-To simulate the CI pipeline locally:
-
 ```bash
 # Run unit tests
 npm test
 
-# Build and test container
-podman build -t rewards-app:test .
-podman run -d --name rewards-test -p 3000:3000 -e JWT_SECRET=test rewards-app:test
-sleep 3
+# Run functional tests (builds container automatically)
 ./scripts/functional-tests.sh
-podman stop rewards-test && podman rm rewards-test
 ```
 
 ## Database
