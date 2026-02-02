@@ -264,12 +264,63 @@ npm test -- --coverage
 ```
 
 **Test Coverage:**
-- 105 automated tests across 5 test files
+- 126 automated tests across 5 test files
 - Auth API tests (15 tests)
 - Families API tests (28 tests)
 - Children API tests (21 tests)
-- Tasks API tests (20 tests)
+- Tasks API tests (41 tests)
 - Rewards API tests (21 tests)
+
+### Functional API Tests
+
+The `scripts/functional-tests.sh` script runs end-to-end API tests against a running container:
+
+```bash
+# Start a container first
+podman run -d --name rewards-test -p 3000:3000 -e JWT_SECRET=test rewards-app
+
+# Run functional tests
+./scripts/functional-tests.sh
+
+# Clean up
+podman stop rewards-test && podman rm rewards-test
+```
+
+The functional tests verify:
+- Health check endpoint
+- User registration and authentication
+- Family creation
+- Child, task, and reward CRUD operations
+- Logout and session invalidation
+
+## Continuous Integration
+
+The project uses GitHub Actions for CI. The workflow runs on every push and pull request.
+
+### CI Pipeline Stages
+
+1. **Unit Tests**: Installs dependencies, builds the shared package, and runs all Vitest tests
+2. **Functional API Tests**: Builds the Docker container, starts it, and runs the functional test script against the live API
+
+### Viewing CI Results
+
+Check the Actions tab in the GitHub repository to see workflow runs and results.
+
+### Running CI Locally
+
+To simulate the CI pipeline locally:
+
+```bash
+# Run unit tests
+npm test
+
+# Build and test container
+podman build -t rewards-app:test .
+podman run -d --name rewards-test -p 3000:3000 -e JWT_SECRET=test rewards-app:test
+sleep 3
+./scripts/functional-tests.sh
+podman stop rewards-test && podman rm rewards-test
+```
 
 ## Database
 
