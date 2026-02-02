@@ -44,14 +44,6 @@ echo "Cleaning up any existing test container..."
 podman stop "$CONTAINER_NAME" 2>/dev/null || true
 podman rm "$CONTAINER_NAME" 2>/dev/null || true
 
-# Stop any container using port 3000
-CONTAINER_ON_PORT=$(podman ps --format "{{.Names}} {{.Ports}}" 2>/dev/null | grep ":$TEST_PORT->" | awk '{print $1}' | head -1)
-if [ -n "$CONTAINER_ON_PORT" ]; then
-  echo "Stopping container '$CONTAINER_ON_PORT' using port $TEST_PORT..."
-  podman stop "$CONTAINER_ON_PORT" 2>/dev/null || true
-  podman rm "$CONTAINER_ON_PORT" 2>/dev/null || true
-fi
-
 # Build the container
 echo "Building container..."
 podman build -t "$IMAGE_NAME" . || { echo "FAIL: Container build failed"; exit 1; }
