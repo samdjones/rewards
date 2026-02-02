@@ -3,7 +3,7 @@ set -e
 
 CONTAINER_NAME="rewards-functional-test"
 IMAGE_NAME="rewards-app:test"
-TEST_PORT="${TEST_PORT:-13000}"
+TEST_PORT=3000
 BASE_URL="http://localhost:$TEST_PORT/api"
 COOKIE_JAR=$(mktemp)
 
@@ -40,16 +40,24 @@ echo "=== Functional API Tests ==="
 echo ""
 
 # Stop any existing container with same name
-echo "Cleaning up any existing container..."
+echo "Cleaning up any existing test container..."
 podman stop "$CONTAINER_NAME" 2>/dev/null || true
 podman rm "$CONTAINER_NAME" 2>/dev/null || true
+
+# Stop any container using port 3000
+CONTAINER_ON_PORT=$(podman ps --format "{{.Names}} {{.Ports}}" 2>/dev/null | grep ":$TEST_PORT->" | awk '{print $1}' | head -1)
+if [ -n "$CONTAINER_ON_PORT" ]; then
+  echo "Stopping container '$CONTAINER_ON_PORT' using port $TEST_PORT..."
+  podman stop "$CONTAINER_ON_PORT" 2>/dev/null || true
+  podman rm "$CONTAINER_ON_PORT" 2>/dev/null || true
+fi
 
 # Build the container
 echo "Building container..."
 podman build -t "$IMAGE_NAME" . || { echo "FAIL: Container build failed"; exit 1; }
 
 # Start the container
-echo "Starting container on port $TEST_PORT..."
+echo "Starting container..."
 podman run -d \
   --name "$CONTAINER_NAME" \
   -p "$TEST_PORT:3000" \
