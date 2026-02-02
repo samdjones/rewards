@@ -11,8 +11,8 @@ cleanup() {
   rm -f "$COOKIE_JAR"
   echo ""
   echo "Stopping container..."
-  docker stop "$CONTAINER_NAME" 2>/dev/null || true
-  docker rm "$CONTAINER_NAME" 2>/dev/null || true
+  podman stop "$CONTAINER_NAME" 2>/dev/null || true
+  podman rm "$CONTAINER_NAME" 2>/dev/null || true
 }
 
 # Set trap to cleanup on exit
@@ -40,16 +40,16 @@ echo ""
 
 # Stop any existing container with same name
 echo "Cleaning up any existing container..."
-docker stop "$CONTAINER_NAME" 2>/dev/null || true
-docker rm "$CONTAINER_NAME" 2>/dev/null || true
+podman stop "$CONTAINER_NAME" 2>/dev/null || true
+podman rm "$CONTAINER_NAME" 2>/dev/null || true
 
 # Build the container
 echo "Building container..."
-docker build -t "$IMAGE_NAME" . || { echo "FAIL: Container build failed"; exit 1; }
+podman build -t "$IMAGE_NAME" . || { echo "FAIL: Container build failed"; exit 1; }
 
 # Start the container
 echo "Starting container..."
-docker run -d \
+podman run -d \
   --name "$CONTAINER_NAME" \
   -p 3000:3000 \
   -e JWT_SECRET=test-secret-for-functional-tests \
@@ -67,7 +67,7 @@ for i in {1..30}; do
   if [ $i -eq 30 ]; then
     echo ""
     echo "FAIL: Container failed to become ready"
-    docker logs "$CONTAINER_NAME"
+    podman logs "$CONTAINER_NAME"
     exit 1
   fi
 done
