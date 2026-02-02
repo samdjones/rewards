@@ -2,7 +2,7 @@
 set -e
 
 CONTAINER_NAME="rewards-test"
-IMAGE_NAME="rewards-app-test:latest"
+IMAGE_NAME="rewards-app:latest"
 TEST_PORT=13000
 BASE_URL="http://localhost:$TEST_PORT/api"
 COOKIE_JAR=$(mktemp)
