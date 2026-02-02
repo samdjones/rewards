@@ -66,7 +66,7 @@ podman run -d \
 # Wait for container to be ready
 echo -n "Waiting for container to be ready"
 for i in {1..30}; do
-  if curl -s "http://localhost:$PORT/api/health" > /dev/null 2>&1; then
+  if curl -sk "https://localhost:$PORT/api/health" > /dev/null 2>&1; then
     echo " ready!"
     break
   fi
@@ -83,7 +83,7 @@ done
 echo ""
 echo "=== Deployment complete ==="
 echo ""
-echo "App running at: http://localhost:$PORT"
+echo "App running at: https://localhost:$PORT"
 echo "Container name: $CONTAINER_NAME"
 echo "Data volume:    $VOLUME_NAME"
 echo ""

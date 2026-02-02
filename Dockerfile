@@ -24,6 +24,7 @@ RUN mkdir -p /data
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV DATABASE_PATH=/data/database.db
+ENV CERT_DIR=/data
 
 EXPOSE 3000
 

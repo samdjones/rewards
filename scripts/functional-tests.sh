@@ -4,7 +4,7 @@ set -e
 CONTAINER_NAME="rewards-test"
 IMAGE_NAME="rewards-app:latest"
 TEST_PORT=13000
-BASE_URL="http://localhost:$TEST_PORT/api"
+BASE_URL="https://localhost:$TEST_PORT/api"
 COOKIE_JAR=$(mktemp)
 
 # Cleanup function
@@ -26,12 +26,12 @@ api() {
   local data=$3
 
   if [ -n "$data" ]; then
-    curl -s -X "$method" "$BASE_URL$endpoint" \
+    curl -sk -X "$method" "$BASE_URL$endpoint" \
       -H "Content-Type: application/json" \
       -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
       -d "$data"
   else
-    curl -s -X "$method" "$BASE_URL$endpoint" \
+    curl -sk -X "$method" "$BASE_URL$endpoint" \
       -b "$COOKIE_JAR" -c "$COOKIE_JAR"
   fi
 }
@@ -59,7 +59,7 @@ podman run -d \
 # Wait for container to be ready
 echo -n "Waiting for container to be ready"
 for i in {1..30}; do
-  if curl -s "$BASE_URL/health" > /dev/null 2>&1; then
+  if curl -sk "$BASE_URL/health" > /dev/null 2>&1; then
     echo " ready!"
     break
   fi
@@ -79,7 +79,7 @@ echo ""
 
 # Test 1: Health check
 echo -n "Health check... "
-HEALTH=$(curl -s "$BASE_URL/health")
+HEALTH=$(curl -sk "$BASE_URL/health")
 echo "$HEALTH" | grep -q "ok" && echo "PASS" || { echo "FAIL"; exit 1; }
 
 # Test 2: Register user
