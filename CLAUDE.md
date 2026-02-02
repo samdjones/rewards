@@ -2,3 +2,4 @@
 - update the documentation to reflect the changes
 - create a pull request to merge your changes into the main branch
 - review and test the changes before raising a pull request
+- use podman to build and run containers
