@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-CONTAINER_NAME="rewards-functional-test"
-IMAGE_NAME="rewards-app:test"
+CONTAINER_NAME="rewards-test"
+IMAGE_NAME="rewards-app-test:latest"
 TEST_PORT=13000
 BASE_URL="http://localhost:$TEST_PORT/api"
 COOKIE_JAR=$(mktemp)
