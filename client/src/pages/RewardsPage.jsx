@@ -34,7 +34,7 @@ const RewardsPage = () => {
       ]);
       setRewards(rewardsRes.rewards);
       setChildren(childrenRes.children);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load data');
     } finally {
       setLoading(false);
@@ -55,8 +55,8 @@ const RewardsPage = () => {
       setShowModal(false);
       setFormData({ name: '', description: '', point_cost: '', category: '' });
       loadData();
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      setError('Failed to save reward');
     }
   };
 
@@ -76,8 +76,8 @@ const RewardsPage = () => {
       setSelectedReward(null);
       alert('Reward redeemed successfully!');
       loadData();
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      setError('Failed to save reward');
     }
   };
 
@@ -99,7 +99,7 @@ const RewardsPage = () => {
     try {
       await rewardsAPI.delete(id);
       loadData();
-    } catch (err) {
+    } catch (_err) {
       alert('Failed to delete reward');
     }
   };
@@ -136,8 +136,8 @@ const RewardsPage = () => {
       setEditingReward(null);
       setFormData({ name: '', description: '', point_cost: '', category: '' });
       loadData();
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      setError('Failed to save reward');
     }
   };
 

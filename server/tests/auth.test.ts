@@ -4,7 +4,6 @@ import { Express } from 'express';
 import {
   getApp,
   registerUser,
-  loginUser,
   getCookie,
   setupUserWithFamily,
 } from './helpers.js';

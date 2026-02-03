@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authAPI.getMe();
       setUser(data.user);
-    } catch (error) {
+    } catch (_error) {
       setUser(null);
     } finally {
       setLoading(false);
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const data = await authAPI.login(email, password);
+    await authAPI.login(email, password);
     // Fetch full user info including family
     const meData = await authAPI.getMe();
     setUser(meData.user);
@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authAPI.getMe();
       setUser(data.user);
-    } catch (error) {
+    } catch (_error) {
       // User might be logged out
       setUser(null);
     }

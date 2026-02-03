@@ -8,7 +8,7 @@ const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [_error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
@@ -44,7 +44,7 @@ const Dashboard = () => {
       ]);
       setChildren(childrenData.children);
       setTasks(tasksData.tasks);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load data');
     } finally {
       setLoading(false);
@@ -59,8 +59,8 @@ const Dashboard = () => {
         completionMap[`${c.task_id}-${c.child_id}`] = true;
       });
       setCompletedTasks(completionMap);
-    } catch (err) {
-      console.error('Failed to load completions:', err);
+    } catch (_err) {
+      console.error('Failed to load completions');
     }
   };
 
@@ -68,7 +68,7 @@ const Dashboard = () => {
     try {
       const data = await childrenAPI.getAll();
       setChildren(data.children);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load data');
     }
   };

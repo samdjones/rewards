@@ -90,13 +90,9 @@ class DatabaseWrapperImpl implements IDatabaseWrapper {
 
   transaction<T>(fn: () => T): () => T {
     return () => {
-      try {
-        const result = fn();
-        maybeSave();
-        return result;
-      } catch (error) {
-        throw error;
-      }
+      const result = fn();
+      maybeSave();
+      return result;
     };
   }
 }

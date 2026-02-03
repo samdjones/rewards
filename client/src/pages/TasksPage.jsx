@@ -38,7 +38,7 @@ const TasksPage = () => {
       ]);
       setTasks(tasksRes.tasks);
       setChildren(childrenRes.children);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load data');
     } finally {
       setLoading(false);
@@ -60,8 +60,8 @@ const TasksPage = () => {
       setShowModal(false);
       setFormData({ name: '', description: '', point_value: '', category: '', repeat_schedule: 'none' });
       loadData();
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      setError('Operation failed');
     }
   };
 
@@ -76,8 +76,8 @@ const TasksPage = () => {
       setSelectedTask(null);
       alert('Task completed successfully!');
       loadData();
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      setError('Operation failed');
     }
   };
 
@@ -87,7 +87,7 @@ const TasksPage = () => {
     try {
       await tasksAPI.delete(id);
       loadData();
-    } catch (err) {
+    } catch (_err) {
       alert('Failed to delete task');
     }
   };
@@ -125,8 +125,8 @@ const TasksPage = () => {
       setEditingTask(null);
       setFormData({ name: '', description: '', point_value: '', category: '', repeat_schedule: 'none' });
       loadData();
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      setError('Operation failed');
     }
   };
 
@@ -184,7 +184,7 @@ const TasksPage = () => {
     try {
       const taskIds = newTasks.map(t => t.id);
       await tasksAPI.reorder(taskIds);
-    } catch (err) {
+    } catch (_err) {
       // Revert on error
       loadData();
       alert('Failed to reorder tasks');
