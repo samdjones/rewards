@@ -264,12 +264,56 @@ npm test -- --coverage
 ```
 
 **Test Coverage:**
-- 105 automated tests across 5 test files
+- 126 automated tests across 5 test files
 - Auth API tests (15 tests)
 - Families API tests (28 tests)
 - Children API tests (21 tests)
-- Tasks API tests (20 tests)
+- Tasks API tests (41 tests)
 - Rewards API tests (21 tests)
+
+### Functional API Tests
+
+The `scripts/functional-tests.sh` script runs end-to-end API tests. It handles everything automatically:
+- Builds the container image
+- Stops any existing test container
+- Starts a fresh container
+- Runs all API tests
+- Cleans up on exit
+
+```bash
+# Just run it - handles everything
+./scripts/functional-tests.sh
+```
+
+The functional tests verify:
+- Health check endpoint
+- User registration and authentication
+- Family creation
+- Child, task, and reward CRUD operations
+- Logout and session invalidation
+
+## Continuous Integration
+
+The project uses GitHub Actions for CI. The workflow runs on every push and pull request.
+
+### CI Pipeline Stages
+
+1. **Unit Tests**: Installs dependencies, builds the shared package, and runs all Vitest tests
+2. **Functional API Tests**: Runs the functional test script (which builds and tests the container)
+
+### Viewing CI Results
+
+Check the Actions tab in the GitHub repository to see workflow runs and results.
+
+### Running CI Locally
+
+```bash
+# Run unit tests
+npm test
+
+# Run functional tests (builds container automatically)
+./scripts/functional-tests.sh
+```
 
 ## Database
 
