@@ -78,6 +78,9 @@ jobs:
       - name: Build container image
         run: podman build -t rewards-app:ci .
 
+      - name: Save image for scanning
+        run: podman save rewards-app:ci -o rewards-app.tar
+
       - name: Install Trivy
         run: |
           sudo apt-get install -y wget apt-transport-https gnupg lsb-release
@@ -88,7 +91,7 @@ jobs:
 
       - name: Scan container image with Trivy
         run: |
-          trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed rewards-app:ci
+          trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --input rewards-app.tar
 
   functional-tests:
     name: Functional API Tests
