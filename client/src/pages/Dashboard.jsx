@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { childrenAPI } from '../api/children';
 import { tasksAPI } from '../api/tasks';
 import styles from './Dashboard.module.css';
@@ -26,17 +26,7 @@ const Dashboard = () => {
   const isToday = selectedDate === getToday();
   const isYesterday = selectedDate === getYesterday();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (tasks.length > 0) {
-      loadCompletions();
-    }
-  }, [selectedDate, tasks]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [childrenData, tasksData] = await Promise.all([
         childrenAPI.getAll(),
@@ -49,9 +39,9 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadCompletions = async () => {
+  const loadCompletions = useCallback(async () => {
     try {
       const data = await tasksAPI.getCompletionsForDate(selectedDate);
       const completionMap = {};
@@ -62,7 +52,17 @@ const Dashboard = () => {
     } catch (_err) {
       console.error('Failed to load completions');
     }
-  };
+  }, [selectedDate]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      loadCompletions();
+    }
+  }, [tasks, loadCompletions]);
 
   const loadChildren = async () => {
     try {
