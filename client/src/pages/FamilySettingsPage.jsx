@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { familiesAPI } from '../api/families';
@@ -14,11 +14,7 @@ const FamilySettingsPage = () => {
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const membersData = await familiesAPI.getMembers();
@@ -33,7 +29,11 @@ const FamilySettingsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleRegenerateCode = async () => {
     if (!confirm('Are you sure? The old invite code will stop working.')) return;
