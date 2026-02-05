@@ -65,10 +65,11 @@ export default defineConfig({
   ],
 
   // Run your local dev server before starting the tests
-  webServer: {
-    command: 'npm start',
+  // Skip webServer in CI or when PLAYWRIGHT_BASE_URL is set (container is already running)
+  webServer: process.env.CI || process.env.PLAYWRIGHT_BASE_URL ? undefined : {
+    command: 'npm run dev',
     url: 'https://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     ignoreHTTPSErrors: true,
     timeout: 120 * 1000,
   },
