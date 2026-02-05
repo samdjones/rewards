@@ -78,18 +78,19 @@ jobs:
       - name: Build container image
         run: podman build -t rewards-app:ci .
 
+      - name: Export image to tar for scanning
+        run: podman save rewards-app:ci -o rewards-app.tar
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: 'localhost/rewards-app:ci'
+          input: 'rewards-app.tar'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'HIGH,CRITICAL'
           scanners: 'vuln'
-        env:
-          TRIVY_DB_REPOSITORY: 'public.ecr.aws/aquasecurity/trivy-db:2'
 
   functional-tests:
     name: Functional API Tests
