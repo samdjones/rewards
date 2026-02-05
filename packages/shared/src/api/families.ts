@@ -19,7 +19,7 @@ export interface UpdateMemberRoleRequest {
 }
 
 // Response types
-export interface FamilyWithInviteCode extends Family {}
+export type FamilyWithInviteCode = Family;
 
 export interface FamilyInfo {
   id: number;

@@ -5,7 +5,6 @@ import {
   getApp,
   registerUser,
   getCookie,
-  createFamily,
   setupUserWithFamily,
 } from './helpers.js';
 
@@ -70,7 +69,7 @@ describe('Families API', () => {
 
   describe('GET /api/families/current', () => {
     it('should return current family info', async () => {
-      const { cookie, family } = await setupUserWithFamily(app, {}, 'My Family');
+      const { cookie } = await setupUserWithFamily(app, {}, 'My Family');
 
       const res = await request(app)
         .get('/api/families/current')
@@ -244,7 +243,6 @@ describe('Families API', () => {
       const {
         family,
         cookie: adminCookie,
-        user: adminUser,
       } = await setupUserWithFamily(app, {
         email: 'admin@example.com',
         name: 'Admin User',
@@ -306,7 +304,6 @@ describe('Families API', () => {
     it('should prevent non-admin from changing roles', async () => {
       const {
         family,
-        cookie: adminCookie,
         user: adminUser,
       } = await setupUserWithFamily(app, {
         email: 'admin@example.com',
@@ -397,7 +394,7 @@ describe('Families API', () => {
     });
 
     it('should deny access for non-admin', async () => {
-      const { family, cookie: adminCookie } = await setupUserWithFamily(app, {
+      const { family } = await setupUserWithFamily(app, {
         email: 'admin@example.com',
       });
 

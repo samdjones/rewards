@@ -71,7 +71,7 @@ export const createApp = (): Express => {
     res.sendFile(path.join(publicPath, 'index.html'));
   });
 
-  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Something went wrong!' });
   });

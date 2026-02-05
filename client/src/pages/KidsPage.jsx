@@ -21,7 +21,7 @@ const KidsPage = () => {
     try {
       const data = await childrenAPI.getAll();
       setChildren(data.children);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load kids');
     } finally {
       setLoading(false);
@@ -41,8 +41,8 @@ const KidsPage = () => {
       setShowModal(false);
       setFormData({ name: '', age: '', avatar_color: '#3B82F6' });
       loadChildren();
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      setError('Failed to create kid');
     }
   };
 
@@ -54,7 +54,7 @@ const KidsPage = () => {
     try {
       await childrenAPI.delete(id);
       loadChildren();
-    } catch (err) {
+    } catch (_err) {
       alert('Failed to delete kid');
     }
   };

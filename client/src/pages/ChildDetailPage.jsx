@@ -26,7 +26,7 @@ const ChildDetailPage = () => {
       setChild(childRes.child);
       setActivity(activityRes.activity);
       setStats(statsRes);
-    } catch (err) {
+    } catch (_err) {
       alert('Failed to load child data');
       navigate('/');
     } finally {
@@ -46,7 +46,7 @@ const ChildDetailPage = () => {
     try {
       await childrenAPI.adjustPoints(id, -child.current_points, 'Points reset to zero');
       loadData();
-    } catch (err) {
+    } catch (_err) {
       alert('Failed to reset points');
     }
   };
