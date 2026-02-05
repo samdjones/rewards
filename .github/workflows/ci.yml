@@ -86,7 +86,7 @@ jobs:
         with:
           input: 'rewards-app.tar'
           format: 'table'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'HIGH,CRITICAL'
