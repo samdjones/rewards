@@ -10,7 +10,7 @@ test.describe('Kids CRUD Operations', () => {
     await page.getByRole('link', { name: /Kids/i }).click();
 
     // Click add kid button
-    await page.getByRole('button', { name: /Add Kid/i }).click();
+    await page.getByRole('button', { name: '+ Add Kid' }).click();
 
     // Modal should be visible
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -61,13 +61,15 @@ test.describe('Kids CRUD Operations', () => {
     await page.getByRole('link', { name: /Kids/i }).click();
 
     // Open modal
-    await page.getByRole('button', { name: /Add Kid/i }).click();
+    await page.getByRole('button', { name: '+ Add Kid' }).click();
 
-    // Try to submit without filling fields
+    // Name field should have required attribute (HTML5 validation)
+    const nameInput = page.getByLabel(/Name/i);
+    await expect(nameInput).toHaveAttribute('required', '');
+
+    // Modal should still be visible after attempting to submit without data
     await page.getByRole('button', { name: /Add|Create/i }).click();
-
-    // Should show validation error
-    await expect(page.getByText(/required/i)).toBeVisible();
+    await expect(page.getByRole('dialog')).toBeVisible();
   });
 
   test('should delete kid with confirmation', async ({ page }) => {
@@ -172,7 +174,7 @@ test.describe('Kids CRUD Operations', () => {
     await page.getByRole('link', { name: /Kids/i }).click();
 
     // Open modal
-    await page.getByRole('button', { name: /Add Kid/i }).click();
+    await page.getByRole('button', { name: '+ Add Kid' }).click();
 
     // Fill in some data
     await page.getByLabel(/Name/i).fill('Test Kid');

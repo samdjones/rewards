@@ -106,7 +106,7 @@ export async function addKid(page, kidData = {}) {
   const pointsPerTask = kidData.pointsPerTask || 10;
 
   // Open add kid modal
-  await page.getByRole('button', { name: /Add Kid/i }).click();
+  await page.getByRole('button', { name: '+ Add Kid' }).click();
 
   // Fill in kid details
   await page.getByLabel(/Name/i).fill(name);
