@@ -34,30 +34,45 @@ export const testKids = [
 export const testTasks = [
   {
     name: 'Make Bed',
-    description: 'Make your bed in the morning'
+    description: 'Make your bed in the morning',
+    point_value: 5,
+    category: 'Chores',
+    repeat_schedule: 'daily'
   },
   {
     name: 'Brush Teeth',
-    description: 'Brush teeth twice a day'
+    description: 'Brush teeth twice a day',
+    point_value: 3,
+    category: 'Hygiene',
+    repeat_schedule: 'weekdays'
   },
   {
     name: 'Do Homework',
-    description: 'Complete all homework assignments'
+    description: 'Complete all homework assignments',
+    point_value: 10,
+    category: 'Homework',
+    repeat_schedule: 'none'
   }
 ];
 
 export const testRewards = [
   {
     name: 'Ice Cream',
-    cost: 50
+    cost: 50,
+    description: 'A scoop of your favorite flavor',
+    category: 'Treats'
   },
   {
     name: 'Movie Night',
-    cost: 100
+    cost: 100,
+    description: 'Pick a movie to watch together',
+    category: 'Activities'
   },
   {
     name: 'New Toy',
-    cost: 200
+    cost: 200,
+    description: 'Choose a new toy from the store',
+    category: 'Toys'
   }
 ];
 

@@ -97,6 +97,99 @@ export async function joinFamily(page, inviteCode) {
 }
 
 /**
+ * Add a task via the Tasks page modal
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} taskData - { name, point_value, description?, category?, repeat_schedule? }
+ */
+export async function addTask(page, taskData = {}) {
+  const name = taskData.name || 'Test Task';
+  const point_value = taskData.point_value || 5;
+
+  // Open add task modal
+  await page.getByRole('button', { name: '+ Add Task' }).click();
+
+  // Fill required fields
+  await page.getByLabel('Task Name *').fill(name);
+  await page.getByLabel('Point Value *').fill(point_value.toString());
+
+  // Fill optional fields
+  if (taskData.description) {
+    await page.getByLabel('Description').fill(taskData.description);
+  }
+  if (taskData.category) {
+    await page.getByLabel('Category').fill(taskData.category);
+  }
+  if (taskData.repeat_schedule) {
+    await page.getByLabel('Repeat Schedule').selectOption(taskData.repeat_schedule);
+  }
+
+  // Submit with exact match to avoid matching the "+ Add Task" header button
+  await page.getByRole('button', { name: 'Add Task', exact: true }).click();
+
+  // Wait for modal to close
+  await page.waitForTimeout(500);
+
+  return { name, point_value };
+}
+
+/**
+ * Add a reward via the Rewards page modal
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} rewardData - { name, cost, description?, category? }
+ */
+export async function addReward(page, rewardData = {}) {
+  const name = rewardData.name || 'Test Reward';
+  const cost = rewardData.cost || 50;
+
+  // Open add reward modal
+  await page.getByRole('button', { name: '+ Add Reward' }).click();
+
+  // Fill required fields
+  await page.getByLabel('Reward Name *').fill(name);
+  await page.getByLabel('Point Cost *').fill(cost.toString());
+
+  // Fill optional fields
+  if (rewardData.description) {
+    await page.getByLabel('Description').fill(rewardData.description);
+  }
+  if (rewardData.category) {
+    await page.getByLabel('Category').fill(rewardData.category);
+  }
+
+  // Submit with exact match
+  await page.getByRole('button', { name: 'Add Reward', exact: true }).click();
+
+  // Wait for modal to close
+  await page.waitForTimeout(500);
+
+  return { name, cost };
+}
+
+/**
+ * Complete a task on the Tasks page for a given child
+ * @param {import('@playwright/test').Page} page
+ * @param {string} taskName
+ * @param {string} childName
+ */
+export async function completeTaskOnTasksPage(page, taskName, childName) {
+  // Find the task card and click Complete
+  const taskCard = page.locator(`text=${taskName}`).locator('..').locator('..');
+  await taskCard.getByRole('button', { name: 'Complete' }).click();
+
+  // Select child from dropdown
+  await page.getByLabel('Select Child *').selectOption({ label: childName });
+
+  // Handle the native alert
+  page.once('dialog', dialog => dialog.accept());
+
+  // Click Mark Complete
+  await page.getByRole('button', { name: 'Mark Complete' }).click();
+
+  // Wait for completion
+  await page.waitForTimeout(500);
+}
+
+/**
  * Add a kid to the family
  * @param {import('@playwright/test').Page} page
  * @param {Object} kidData
