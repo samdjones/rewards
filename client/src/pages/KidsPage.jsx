@@ -9,7 +9,10 @@ const KidsPage = () => {
   const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingChildId, setEditingChildId] = useState(null);
   const [formData, setFormData] = useState({ name: '', age: '', avatar_color: '#3B82F6' });
+  const [editFormData, setEditFormData] = useState({ name: '', age: '', avatar_color: '#3B82F6' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -59,6 +62,36 @@ const KidsPage = () => {
     }
   };
 
+  const openEditModal = (id) => {
+    const child = children.find(c => c.id === id);
+    if (!child) return;
+    setEditingChildId(id);
+    setEditFormData({
+      name: child.name,
+      age: child.age ? child.age.toString() : '',
+      avatar_color: child.avatar_color || '#3B82F6'
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      await childrenAPI.update(editingChildId, {
+        name: editFormData.name,
+        age: editFormData.age ? parseInt(editFormData.age) : null,
+        avatar_color: editFormData.avatar_color
+      });
+      setShowEditModal(false);
+      setEditingChildId(null);
+      loadChildren();
+    } catch (_err) {
+      setError('Failed to update kid');
+    }
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
@@ -83,6 +116,7 @@ const KidsPage = () => {
               key={child.id}
               child={child}
               onDelete={handleDelete}
+              onEdit={openEditModal}
               onClick={() => navigate(`/children/${child.id}`)}
             />
           ))}
@@ -127,6 +161,48 @@ const KidsPage = () => {
             </div>
 
             <button type="submit" className={styles.submitBtn}>Add Kid</button>
+          </form>
+        </Modal>
+      )}
+
+      {showEditModal && (
+        <Modal onClose={() => { setShowEditModal(false); setEditingChildId(null); }} title="Edit Kid">
+          {error && <div className={styles.error}>{error}</div>}
+          <form onSubmit={handleEditSubmit} className={styles.form}>
+            <div className={styles.formGroup}>
+              <label htmlFor="edit_name">Name *</label>
+              <input
+                id="edit_name"
+                type="text"
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="edit_age">Age (optional)</label>
+              <input
+                id="edit_age"
+                type="number"
+                min="0"
+                max="18"
+                value={editFormData.age}
+                onChange={(e) => setEditFormData({ ...editFormData, age: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="edit_color">Avatar Color</label>
+              <input
+                id="edit_color"
+                type="color"
+                value={editFormData.avatar_color}
+                onChange={(e) => setEditFormData({ ...editFormData, avatar_color: e.target.value })}
+              />
+            </div>
+
+            <button type="submit" className={styles.submitBtn}>Save Changes</button>
           </form>
         </Modal>
       )}

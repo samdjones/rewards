@@ -67,6 +67,28 @@
   font-size: 0.9rem;
 }
 
+.editBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 2.5rem;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.editBtn:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
 .deleteBtn {
   position: absolute;
   top: 0.5rem;
