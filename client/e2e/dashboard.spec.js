@@ -11,11 +11,16 @@ test.describe('Dashboard', () => {
     await expect(page.getByText(/Add.*kid|No kids|Get started.*adding/i)).toBeVisible();
   });
 
-  test.skip('should show empty state when no tasks exist', async ({ page }) => {
-    // SKIPPED: Requires adding kids from Dashboard (feature not implemented)
+  test('should show empty state when no tasks exist', async ({ page }) => {
     // Setup user with family and one kid
     await setupAuthenticatedUser(page);
+
+    // Navigate to Kids page to add a kid
+    await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
+
+    // Navigate back to dashboard
+    await page.getByRole('link', { name: /Dashboard/i }).click();
 
     // Reload to see updated dashboard
     await page.reload();
@@ -24,20 +29,21 @@ test.describe('Dashboard', () => {
     await expect(page.getByText(/Add.*task|No tasks|Create.*first task/i)).toBeVisible();
   });
 
-  test.skip('should display task matrix with kids and tasks', async ({ page }) => {
-    // SKIPPED: Requires adding kids from Dashboard (feature not implemented)
+  test('should display task matrix with kids and tasks', async ({ page }) => {
     // Setup user with family
     await setupAuthenticatedUser(page);
 
-    // Add kids
+    // Navigate to Kids page to add kids
+    await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
     await addKid(page, testKids[1]);
 
     // Add tasks (navigate to tasks page)
     await page.getByRole('link', { name: /Tasks/i }).click();
-    await page.getByRole('button', { name: /Add Task/i }).click();
+    await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
-    await page.getByRole('button', { name: /Add|Create/i }).click();
+    await page.getByLabel(/Point Value/i).fill('5');
+    await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go back to dashboard
     await page.getByRole('link', { name: /Dashboard/i }).click();
@@ -48,81 +54,87 @@ test.describe('Dashboard', () => {
     await expect(page.getByText(testKids[1].name)).toBeVisible();
   });
 
-  test.skip('should update points when checking task', async ({ page }) => {
-    // SKIPPED: Requires adding kids from Dashboard (feature not implemented)
+  test('should update points when checking task', async ({ page }) => {
+    const taskPointValue = 5;
+
     // Setup user with family, kid, and task
     await setupAuthenticatedUser(page);
-    const kid = await addKid(page, testKids[0]);
+
+    // Navigate to Kids page to add a kid
+    await page.getByRole('link', { name: /Kids/i }).click();
+    await addKid(page, testKids[0]);
 
     // Add task
     await page.getByRole('link', { name: /Tasks/i }).click();
-    await page.getByRole('button', { name: /Add Task/i }).click();
+    await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
-    await page.getByRole('button', { name: /Add|Create/i }).click();
+    await page.getByLabel(/Point Value/i).fill(taskPointValue.toString());
+    await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard
     await page.getByRole('link', { name: /Dashboard/i }).click();
 
-    // Get initial points
-    const initialPoints = await page.getByText(/\d+\s*points?/i).textContent();
-    const pointsMatch = initialPoints.match(/(\d+)/);
-    const points = pointsMatch ? parseInt(pointsMatch[1]) : 0;
-
     // Check task
     const checkbox = page.getByRole('checkbox').first();
-    await checkbox.check();
+    await expect(checkbox).not.toBeChecked();
+    await checkbox.click();
 
-    // Wait for update
-    await page.waitForTimeout(1000);
-
-    // Points should increase
-    await expect(page.getByText(new RegExp(`${points + kid.pointsPerTask}\\s*points?`, 'i'))).toBeVisible();
+    // Wait for API update and points to reflect
+    await expect(checkbox).toBeChecked();
+    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*points?`, 'i')).first()).toBeVisible();
   });
 
-  test.skip('should decrease points when unchecking task', async ({ page }) => {
-    // SKIPPED: Requires adding kids from Dashboard (feature not implemented)
+  test('should decrease points when unchecking task', async ({ page }) => {
+    const taskPointValue = 5;
+
     // Setup user with family, kid, and task
     await setupAuthenticatedUser(page);
-    const kid = await addKid(page, testKids[0]);
+
+    // Navigate to Kids page to add a kid
+    await page.getByRole('link', { name: /Kids/i }).click();
+    await addKid(page, testKids[0]);
 
     // Add task
     await page.getByRole('link', { name: /Tasks/i }).click();
-    await page.getByRole('button', { name: /Add Task/i }).click();
+    await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
-    await page.getByRole('button', { name: /Add|Create/i }).click();
+    await page.getByLabel(/Point Value/i).fill(taskPointValue.toString());
+    await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard
     await page.getByRole('link', { name: /Dashboard/i }).click();
 
     // Check task first
     const checkbox = page.getByRole('checkbox').first();
-    await checkbox.check();
-    await page.waitForTimeout(1000);
+    await expect(checkbox).not.toBeChecked();
+    await checkbox.click();
 
-    // Get points after checking
-    const checkedPoints = await page.getByText(/\d+\s*points?/i).textContent();
-    const pointsMatch = checkedPoints.match(/(\d+)/);
-    const points = pointsMatch ? parseInt(pointsMatch[1]) : 0;
+    // Wait for check to complete
+    await expect(checkbox).toBeChecked();
+    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*points?`, 'i')).first()).toBeVisible();
 
     // Uncheck task
-    await checkbox.uncheck();
-    await page.waitForTimeout(1000);
+    await checkbox.click();
 
-    // Points should decrease
-    await expect(page.getByText(new RegExp(`${points - kid.pointsPerTask}\\s*points?`, 'i'))).toBeVisible();
+    // Wait for uncheck to complete
+    await expect(checkbox).not.toBeChecked();
+    await expect(page.getByText(/\b0\s*points?/i).first()).toBeVisible();
   });
 
-  test.skip('should filter tasks by date (today)', async ({ page }) => {
-    // SKIPPED: Requires adding kids from Dashboard (feature not implemented)
+  test('should filter tasks by date (today)', async ({ page }) => {
     // Setup user with family, kid, and task
     await setupAuthenticatedUser(page);
+
+    // Navigate to Kids page to add a kid
+    await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
 
     // Add task
     await page.getByRole('link', { name: /Tasks/i }).click();
-    await page.getByRole('button', { name: /Add Task/i }).click();
+    await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
-    await page.getByRole('button', { name: /Add|Create/i }).click();
+    await page.getByLabel(/Point Value/i).fill('5');
+    await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard
     await page.getByRole('link', { name: /Dashboard/i }).click();
@@ -137,17 +149,20 @@ test.describe('Dashboard', () => {
     await expect(page.getByText('Make Bed')).toBeVisible();
   });
 
-  test.skip('should filter tasks by date (yesterday)', async ({ page }) => {
-    // SKIPPED: Requires adding kids from Dashboard (feature not implemented)
+  test('should filter tasks by date (yesterday)', async ({ page }) => {
     // Setup user with family, kid, and task
     await setupAuthenticatedUser(page);
+
+    // Navigate to Kids page to add a kid
+    await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
 
-    // Add task
+    // Add task (one-time, so should only show on today)
     await page.getByRole('link', { name: /Tasks/i }).click();
-    await page.getByRole('button', { name: /Add Task/i }).click();
+    await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
-    await page.getByRole('button', { name: /Add|Create/i }).click();
+    await page.getByLabel(/Point Value/i).fill('5');
+    await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard
     await page.getByRole('link', { name: /Dashboard/i }).click();

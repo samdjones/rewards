@@ -72,8 +72,7 @@ test.describe('Kids CRUD Operations', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
-  test.skip('should delete kid with confirmation', async ({ page }) => {
-    // SKIPPED: Delete functionality not fully implemented or button not accessible
+  test('should delete kid with confirmation', async ({ page }) => {
     await setupAuthenticatedUser(page);
 
     // Navigate to kids page
@@ -83,12 +82,12 @@ test.describe('Kids CRUD Operations', () => {
     const kid = await addKid(page, testKids[0]);
     await page.reload();
 
+    // Accept the native confirm dialog when it appears
+    page.on('dialog', dialog => dialog.accept());
+
     // Delete kid
     const deleteButton = page.getByRole('button', { name: /Delete|Remove/i }).first();
     await deleteButton.click();
-
-    // Confirm deletion
-    await page.getByRole('button', { name: /Confirm|Yes|Delete/i }).click();
 
     // Wait for deletion
     await page.waitForTimeout(1000);
@@ -97,8 +96,7 @@ test.describe('Kids CRUD Operations', () => {
     await expect(page.getByText(kid.name)).not.toBeVisible();
   });
 
-  test.skip('should navigate to kid detail page', async ({ page }) => {
-    // SKIPPED: Kid detail page navigation not fully implemented
+  test('should navigate to kid detail page', async ({ page }) => {
     await setupAuthenticatedUser(page);
 
     // Navigate to kids page
@@ -112,12 +110,11 @@ test.describe('Kids CRUD Operations', () => {
     await page.getByText(kid.name).first().click();
 
     // Should navigate to kid detail page
-    await expect(page).toHaveURL(/\/kids\/\d+/);
+    await expect(page).toHaveURL(/\/children\/\d+/);
     await expect(page.getByText(kid.name)).toBeVisible();
   });
 
-  test.skip('should edit kid information', async ({ page }) => {
-    // SKIPPED: Edit functionality not fully implemented or button not accessible
+  test('should edit kid information', async ({ page }) => {
     await setupAuthenticatedUser(page);
 
     // Navigate to kids page

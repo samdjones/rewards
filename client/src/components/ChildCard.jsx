@@ -1,10 +1,15 @@
 import React from 'react';
 import styles from './ChildCard.module.css';
 
-const ChildCard = ({ child, onDelete, onClick }) => {
+const ChildCard = ({ child, onDelete, onEdit, onClick }) => {
   const handleDelete = (e) => {
     e.stopPropagation();
     onDelete(child.id);
+  };
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    onEdit(child.id);
   };
 
   return (
@@ -20,7 +25,10 @@ const ChildCard = ({ child, onDelete, onClick }) => {
           <span className={styles.pointsLabel}>points</span>
         </div>
       </div>
-      <button onClick={handleDelete} className={styles.deleteBtn} title="Delete">
+      <button onClick={handleEdit} className={styles.editBtn} aria-label="Edit" title="Edit">
+        ✎
+      </button>
+      <button onClick={handleDelete} className={styles.deleteBtn} aria-label="Delete" title="Delete">
         ✕
       </button>
     </div>

@@ -77,11 +77,13 @@ const Dashboard = () => {
     const d = new Date(date + 'T12:00:00');
     const dayOfWeek = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isCurrentDay = date === getToday();
 
     return tasks.filter(task => {
       if (task.repeat_schedule === 'daily') return true;
       if (task.repeat_schedule === 'weekdays' && !isWeekend) return true;
       if (task.repeat_schedule === 'weekends' && isWeekend) return true;
+      if (task.repeat_schedule === 'none' && isCurrentDay) return true;
       return false;
     });
   };
@@ -171,7 +173,7 @@ const Dashboard = () => {
               {children.map(child => (
                 <div key={child.id} className={styles.childHeader}>
                   <span style={{ color: child.avatar_color }}>{child.name}</span>
-                  <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} pts</span>
+                  <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} points</span>
                 </div>
               ))}
             </div>
