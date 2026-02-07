@@ -4,93 +4,55 @@ This document tracks features that are tested in E2E tests but not yet implement
 
 ## Summary
 
-Tests marked with `.skip()` indicate features that need implementation. The tests are written but skipped until the features are built.
+All previously skipped tests for missing features have been implemented and are now passing.
 
 ---
 
-## Missing Features
+## Resolved Features
 
-### 1. **Authenticated User Redirects**
+### 1. **Authenticated User Redirects** (RESOLVED)
 
-**Issue:** When authenticated users navigate to `/login` or `/register`, they are not redirected away.
+**Implemented in:** `LoginPage.jsx`, `RegisterPage.jsx`
 
-**Expected Behavior:**
-- If user is already logged in and has a family, visiting `/login` or `/register` should redirect to `/` (dashboard)
-- If user is logged in but has no family, visiting `/login` or `/register` should redirect to `/family/setup`
+Both login and register pages now check if the user is already authenticated:
+- If user has a family → redirects to `/` (dashboard)
+- If user has no family → redirects to `/family/setup`
 
-**Affected Tests:**
-- `auth.spec.js` - "should redirect authenticated user away from login page" (SKIPPED)
-- `auth.spec.js` - "should redirect authenticated user away from register page" (SKIPPED)
+Uses `Navigate` component from react-router-dom, following the same pattern as `FamilySetupPage.jsx`.
 
-**Implementation Notes:**
-- Add auth check in `LoginPage.jsx` and `RegisterPage.jsx`
-- Use `useAuth()` hook to check if user is authenticated
-- Use `useEffect` + `useNavigate` to redirect if authenticated
-- Similar to how `FamilySetupPage.jsx` redirects if user already has a family
-
-**Example Implementation:**
-```javascript
-// In LoginPage.jsx
-const { user, hasFamily } = useAuth();
-const navigate = useNavigate();
-
-useEffect(() => {
-  if (user) {
-    navigate(hasFamily ? '/' : '/family/setup');
-  }
-}, [user, hasFamily, navigate]);
-```
+**Tests enabled:**
+- `auth.spec.js` - "should redirect authenticated user away from login page"
+- `auth.spec.js` - "should redirect authenticated user away from register page"
 
 ---
 
-### 2. **Family Invite Code Visibility**
+### 2. **Family Invite Code Visibility** (RESOLVED)
 
-**Issue:** No UI exists to view/copy the family invite code after creating a family.
+**Already existed in:** `FamilySettingsPage.jsx`
 
-**Expected Behavior:**
-- Family creators should be able to view their family's invite code
-- Invite code should be accessible from Family Settings or a similar page
-- Code should be easy to copy and share with other family members
+The invite code display was already implemented. The E2E test just needed selector fixes:
+- Navigation uses `<Link>` elements (role `link`), not buttons
+- Invite code is hidden behind a "Show" button
+- Second user needs a separate browser context to avoid shared cookies
 
-**Affected Tests:**
-- `family.spec.js` - "should join family with valid invite code" (SKIPPED)
-
-**Implementation Notes:**
-- Create a Family Settings page accessible from the navigation
-- Display the invite code prominently
-- Add a "Copy" button for easy sharing
-- Consider showing the invite code immediately after family creation
-- Backend already generates invite codes, just need UI to display them
-
-**Recommended UI Location:**
-- Add "Family" link to navigation (already exists: `/family/settings`)
-- Show invite code in a prominent card/section
-- Include helpful text like "Share this code with family members"
+**Test enabled:**
+- `family.spec.js` - "should join family with valid invite code"
 
 ---
 
-## Test Status After Fixes
+## Remaining Skipped Tests
 
-**Passing:** Expected to increase significantly after selector fixes  
-**Skipped:** 3 tests (2 auth redirects + 1 invite code)  
-**Failing:** TBD (re-run needed after current fixes)
+The following tests are still skipped due to unimplemented features:
 
----
+### Dashboard Task Matrix (6 tests)
+- `dashboard.spec.js` - "should show empty state when no tasks exist"
+- `dashboard.spec.js` - "should display task matrix with kids and tasks"
+- `dashboard.spec.js` - "should update points when checking task"
+- `dashboard.spec.js` - "should decrease points when unchecking task"
+- `dashboard.spec.js` - "should filter tasks by date (today)"
+- `dashboard.spec.js` - "should filter tasks by date (yesterday)"
 
-## Priority Recommendations
-
-### High Priority
-1. **Authenticated user redirects** - Important UX improvement, prevents confusion
-   - Estimated effort: 30 minutes (add useEffect to 2 pages)
-
-### Medium Priority  
-2. **Family invite code UI** - Needed for multi-user families, but workaround exists (users can check database directly in development)
-   - Estimated effort: 2-3 hours (new page/component with styling)
-
----
-
-## Notes
-
-- All skipped tests have working backend functionality
-- Tests validate the user flows, not just the UI existence
-- Re-enable tests by removing `.skip()` once features are implemented
+### Kids CRUD (3 tests)
+- `kids.spec.js` - "should delete kid with confirmation"
+- `kids.spec.js` - "should navigate to kid detail page"
+- `kids.spec.js` - "should edit kid information"

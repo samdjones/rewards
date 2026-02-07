@@ -83,8 +83,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/login');
   });
 
-  test.skip('should redirect authenticated user away from login page', async ({ page }) => {
-    // SKIPPED: Missing feature - LoginPage needs to check auth and redirect
+  test('should redirect authenticated user away from login page', async ({ page }) => {
     // Setup authenticated user
     await setupAuthenticatedUser(page);
 
@@ -95,8 +94,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/');
   });
 
-  test.skip('should redirect authenticated user away from register page', async ({ page }) => {
-    // SKIPPED: Missing feature - RegisterPage needs to check auth and redirect
+  test('should redirect authenticated user away from register page', async ({ page }) => {
     // Setup authenticated user
     await setupAuthenticatedUser(page);
 

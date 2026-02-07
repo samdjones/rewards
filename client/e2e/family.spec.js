@@ -46,20 +46,20 @@ test.describe('Family Setup', () => {
     await expect(page).toHaveURL('/family/setup');
   });
 
-  test.skip('should join family with valid invite code', async ({ page, context }) => {
-    // SKIPPED: Missing feature - No UI to view/access family invite code
+  test('should join family with valid invite code', async ({ page, browser }) => {
     // Create first user and family
     const page1 = page;
     await setupAuthenticatedUser(page1);
 
-    // Get invite code from settings or family page
-    // This assumes there's a way to view the invite code
-    await page1.getByRole('button', { name: /Settings|Family/i }).click();
-    const inviteCodeElement = page1.getByText(/[A-Z0-9]{6,}/);
+    // Get invite code from family settings page
+    await page1.getByRole('link', { name: /Family/i }).click();
+    await page1.getByRole('button', { name: /Show/i }).click();
+    const inviteCodeElement = page1.locator('code').getByText(/[A-Z0-9]{6,}/);
     const inviteCode = await inviteCodeElement.textContent();
 
-    // Create second user in new page
-    const page2 = await context.newPage();
+    // Create second user in a separate browser context (isolated cookies)
+    const context2 = await browser.newContext({ ignoreHTTPSErrors: true });
+    const page2 = await context2.newPage();
     await registerUser(page2);
 
     // Should be on family setup page
@@ -73,6 +73,7 @@ test.describe('Family Setup', () => {
     await expect(page2.getByRole('heading', { name: /Dashboard/i })).toBeVisible();
 
     await page2.close();
+    await context2.close();
   });
 
   test('should not allow user with family to access family setup page', async ({ page }) => {

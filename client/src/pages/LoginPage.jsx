@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './AuthPages.module.css';
 
@@ -8,8 +8,11 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, hasFamily, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  if (authLoading) return null;
+  if (user) return <Navigate to={hasFamily ? '/' : '/family/setup'} replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
