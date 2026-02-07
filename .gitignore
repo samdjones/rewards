@@ -4,3 +4,8 @@ dist/
 .env
 .DS_Store
 *.log
+
+# Playwright
+/client/test-results/
+/client/playwright-report/
+/client/playwright/.cache/
