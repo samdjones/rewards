@@ -19,15 +19,15 @@ export const testFamily = {
 export const testKids = [
   {
     name: 'Alice',
-    pointsPerTask: 10
+    age: 8
   },
   {
     name: 'Bob',
-    pointsPerTask: 15
+    age: 10
   },
   {
     name: 'Charlie',
-    pointsPerTask: 20
+    age: 6
   }
 ];
 

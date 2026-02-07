@@ -1,6 +1,6 @@
 - build new features or improve existing ones on a feature branch
 - update the documentation to reflect the changes
 - create a pull request to merge your changes into the main branch
-- run all tests locally before committing changes
+- run all tests (including unit tests and integration tests and end-to-end tests) locally before committing changes, don't commit if tests fail
 - review and test the changes before raising a pull request
 - use podman to build and run containers

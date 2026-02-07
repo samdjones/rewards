@@ -103,20 +103,22 @@ export async function joinFamily(page, inviteCode) {
  */
 export async function addKid(page, kidData = {}) {
   const name = kidData.name || 'Test Kid';
-  const pointsPerTask = kidData.pointsPerTask || 10;
+  const age = kidData.age || null;
 
   // Open add kid modal
   await page.getByRole('button', { name: '+ Add Kid' }).click();
 
   // Fill in kid details
-  await page.getByLabel(/Name/i).fill(name);
-  await page.getByLabel(/Points per task/i).fill(pointsPerTask.toString());
+  await page.getByLabel('Name *').fill(name);
+  if (age) {
+    await page.getByLabel('Age (optional)').fill(age.toString());
+  }
 
-  // Submit
-  await page.getByRole('button', { name: /Add|Create/i }).click();
+  // Submit (use exact match to avoid matching the "+ Add Kid" button)
+  await page.getByRole('button', { name: 'Add Kid', exact: true }).click();
 
   // Wait for modal to close
   await page.waitForTimeout(500);
 
-  return { name, pointsPerTask };
+  return { name, age };
 }
