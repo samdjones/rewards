@@ -53,8 +53,8 @@ export async function setupAuthenticatedUser(page, options = {}) {
   await page.waitForURL('/family/setup');
 
   // Create new family
-  await page.getByRole('button', { name: /Create New Family/i }).click();
-  await page.getByPlaceholder(/family name/i).fill(familyName);
+  await page.getByRole('button', { name: /Create a New Family/i }).click();
+  await page.getByLabel('Family Name').fill(familyName);
   await page.getByRole('button', { name: /Create Family/i }).click();
 
   // Wait for redirect to dashboard
@@ -78,8 +78,8 @@ export async function logout(page) {
  * @param {string} familyName
  */
 export async function createFamily(page, familyName = 'Test Family') {
-  await page.getByRole('button', { name: /Create New Family/i }).click();
-  await page.getByPlaceholder(/family name/i).fill(familyName);
+  await page.getByRole('button', { name: /Create a New Family/i }).click();
+  await page.getByLabel('Family Name').fill(familyName);
   await page.getByRole('button', { name: /Create Family/i }).click();
   await page.waitForURL('/');
 }
@@ -90,8 +90,8 @@ export async function createFamily(page, familyName = 'Test Family') {
  * @param {string} inviteCode
  */
 export async function joinFamily(page, inviteCode) {
-  await page.getByRole('button', { name: /Join Existing Family/i }).click();
-  await page.getByPlaceholder(/invite code/i).fill(inviteCode);
+  await page.getByRole('button', { name: /Join with Invite Code/i }).click();
+  await page.getByLabel('Invite Code').fill(inviteCode);
   await page.getByRole('button', { name: /Join Family/i }).click();
   await page.waitForURL('/');
 }

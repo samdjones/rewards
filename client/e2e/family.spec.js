@@ -35,8 +35,8 @@ test.describe('Family Setup', () => {
     await expect(page).toHaveURL('/family/setup');
 
     // Try to join with invalid code
-    await page.getByRole('button', { name: /Join Existing Family/i }).click();
-    await page.getByPlaceholder(/invite code/i).fill('INVALID123');
+    await page.getByRole('button', { name: /Join with Invite Code/i }).click();
+    await page.getByLabel('Invite Code').fill('INVALID123');
     await page.getByRole('button', { name: /Join Family/i }).click();
 
     // Should show error
@@ -93,7 +93,7 @@ test.describe('Family Setup', () => {
     await expect(page).toHaveURL('/family/setup');
 
     // Try to create family without name
-    await page.getByRole('button', { name: /Create New Family/i }).click();
+    await page.getByRole('button', { name: /Create a New Family/i }).click();
     await page.getByRole('button', { name: /Create Family/i }).click();
 
     // Should show validation error
