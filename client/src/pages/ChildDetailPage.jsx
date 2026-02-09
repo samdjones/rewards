@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { childrenAPI } from '../api/children';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import Avatar from '../components/Avatar';
 import styles from './ChildDetailPage.module.css';
 
 const ChildDetailPage = () => {
@@ -67,9 +68,7 @@ const ChildDetailPage = () => {
       </button>
 
       <div className={styles.header}>
-        <div className={styles.avatar} style={{ backgroundColor: child.avatar_color }}>
-          {child.name.charAt(0).toUpperCase()}
-        </div>
+        <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={100} className={styles.avatar} />
         <div className={styles.headerInfo}>
           <h2>{child.name}</h2>
           {child.age && <p className={styles.age}>Age {child.age}</p>}

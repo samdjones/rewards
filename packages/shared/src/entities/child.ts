@@ -5,6 +5,7 @@ export interface Child {
   name: string;
   age: number | null;
   avatar_color: string;
+  profile_image: string | null;
   current_points: number;
   created_at: string;
 }

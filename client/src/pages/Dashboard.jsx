@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { childrenAPI } from '../api/children';
 import { tasksAPI } from '../api/tasks';
+import Avatar from '../components/Avatar';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
@@ -172,6 +173,7 @@ const Dashboard = () => {
               <div className={styles.taskNameHeader}>Task</div>
               {children.map(child => (
                 <div key={child.id} className={styles.childHeader}>
+                  <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={28} />
                   <span style={{ color: child.avatar_color }}>{child.name}</span>
                   <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} points</span>
                 </div>

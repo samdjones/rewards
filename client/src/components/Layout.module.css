@@ -37,6 +37,44 @@
     font-size: 0.85rem;
 }
 
+.profileButton {
+    position: relative;
+}
+
+.profileTrigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 6px;
+    font-size: inherit;
+    transition: background-color 0.2s;
+}
+
+.profileTrigger:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.profileDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    z-index: 100;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 240px;
+}
+
+.profileDropdownContent {
+    padding: 1rem;
+}
+
 .logoutBtn {
     background-color: rgba(255, 255, 255, 0.2);
     color: white;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { familiesAPI } from '../api/families';
+import Avatar from '../components/Avatar';
 import styles from './FamilySettingsPage.module.css';
 
 const FamilySettingsPage = () => {
@@ -176,6 +177,7 @@ const FamilySettingsPage = () => {
         <div className={styles.membersList}>
           {members.map((member) => (
             <div key={member.id} className={styles.memberItem}>
+              <Avatar profileImage={member.profile_image} avatarColor="#3B82F6" name={member.name} size={36} />
               <div className={styles.memberInfo}>
                 <span className={styles.memberName}>
                   {member.name}
