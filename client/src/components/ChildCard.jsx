@@ -1,4 +1,5 @@
 import React from 'react';
+import Avatar from './Avatar';
 import styles from './ChildCard.module.css';
 
 const ChildCard = ({ child, onDelete, onEdit, onClick }) => {
@@ -14,9 +15,7 @@ const ChildCard = ({ child, onDelete, onEdit, onClick }) => {
 
   return (
     <div className={styles.card} onClick={onClick}>
-      <div className={styles.avatar} style={{ backgroundColor: child.avatar_color }}>
-        {child.name.charAt(0).toUpperCase()}
-      </div>
+      <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={80} className={styles.avatar} />
       <div className={styles.info}>
         <h3 className={styles.name}>{child.name}</h3>
         {child.age && <p className={styles.age}>Age {child.age}</p>}

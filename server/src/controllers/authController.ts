@@ -116,7 +116,7 @@ export const logout = (req: Request, res: Response): void => {
 export const me = (req: Request, res: Response): void => {
   try {
     const user = db
-      .prepare<SafeUser>('SELECT id, email, name FROM users WHERE id = ?')
+      .prepare<SafeUser>('SELECT id, email, name, profile_image FROM users WHERE id = ?')
       .get(req.userId);
 
     if (!user) {

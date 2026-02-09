@@ -11,6 +11,7 @@ interface MemberRow {
   id: number;
   name: string;
   email: string;
+  profile_image: string | null;
   role: FamilyRole;
   joined_at: string;
 }
@@ -229,7 +230,7 @@ export const getMembers = (req: Request, res: Response): void => {
   const members = db
     .prepare<MemberRow>(
       `
-    SELECT u.id, u.name, u.email, fm.role, fm.joined_at
+    SELECT u.id, u.name, u.email, u.profile_image, fm.role, fm.joined_at
     FROM family_members fm
     JOIN users u ON fm.user_id = u.id
     WHERE fm.family_id = ?

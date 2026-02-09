@@ -3,6 +3,7 @@ export interface User {
   email: string;
   password_hash: string;
   name: string;
+  profile_image: string | null;
   created_at: string;
 }
 

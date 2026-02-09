@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { childrenAPI } from '../api/children';
+import { uploadsAPI } from '../api/uploads';
 import ChildCard from '../components/ChildCard';
+import ImageUpload from '../components/ImageUpload';
 import Modal from '../components/Modal';
 import styles from './KidsPage.module.css';
 
@@ -13,6 +15,8 @@ const KidsPage = () => {
   const [editingChildId, setEditingChildId] = useState(null);
   const [formData, setFormData] = useState({ name: '', age: '', avatar_color: '#3B82F6' });
   const [editFormData, setEditFormData] = useState({ name: '', age: '', avatar_color: '#3B82F6' });
+  const [editChildImage, setEditChildImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -71,7 +75,36 @@ const KidsPage = () => {
       age: child.age ? child.age.toString() : '',
       avatar_color: child.avatar_color || '#3B82F6'
     });
+    setEditChildImage(child.profile_image || null);
     setShowEditModal(true);
+  };
+
+  const handleEditImageUpload = async (file) => {
+    if (!editingChildId) return;
+    try {
+      setUploading(true);
+      const data = await uploadsAPI.uploadChildImage(editingChildId, file);
+      setEditChildImage(data.profile_image);
+      loadChildren();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleEditImageRemove = async () => {
+    if (!editingChildId) return;
+    try {
+      setUploading(true);
+      await uploadsAPI.removeChildImage(editingChildId);
+      setEditChildImage(null);
+      loadChildren();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleEditSubmit = async (e) => {
@@ -199,6 +232,16 @@ const KidsPage = () => {
                 type="color"
                 value={editFormData.avatar_color}
                 onChange={(e) => setEditFormData({ ...editFormData, avatar_color: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Profile Picture</label>
+              <ImageUpload
+                currentImage={editChildImage}
+                onUpload={handleEditImageUpload}
+                onRemove={handleEditImageRemove}
+                uploading={uploading}
               />
             </div>
 

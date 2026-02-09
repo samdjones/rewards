@@ -197,6 +197,23 @@ const runMigrations = (): void => {
     console.log('Migration completed: sort_order added');
     saveDatabase();
   }
+
+  // Migration: Add profile_image column to users and children
+  const usersInfo = db.exec('PRAGMA table_info(users)');
+  const usersCols =
+    usersInfo.length > 0
+      ? usersInfo[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!usersCols.includes('profile_image')) {
+    console.log('Running migration: Adding profile_image columns...');
+
+    db.run('ALTER TABLE users ADD COLUMN profile_image TEXT');
+    db.run('ALTER TABLE children ADD COLUMN profile_image TEXT');
+
+    console.log('Migration completed: profile_image added');
+    saveDatabase();
+  }
 };
 
 const initDatabase = async (): Promise<Database> => {
