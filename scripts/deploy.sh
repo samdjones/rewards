@@ -2,7 +2,8 @@
 set -e
 
 CONTAINER_NAME="rewards-app"
-IMAGE_NAME="rewards-app:latest"
+APP_VERSION=$(node -p "require('./package.json').version")
+IMAGE_NAME="rewards-app:${APP_VERSION}"
 PORT=3000
 VOLUME_NAME="rewards-data"
 
@@ -39,8 +40,8 @@ if [ "$FRESH_DB" = true ]; then
 fi
 
 # Build the container
-echo "Building container..."
-podman build -t "$IMAGE_NAME" . || { echo "FAIL: Container build failed"; exit 1; }
+echo "Building container (version $APP_VERSION)..."
+podman build --build-arg APP_VERSION="$APP_VERSION" -t "$IMAGE_NAME" -t "rewards-app:latest" . || { echo "FAIL: Container build failed"; exit 1; }
 
 # Check for JWT_SECRET
 if [ -z "$JWT_SECRET" ]; then
@@ -83,6 +84,7 @@ done
 echo ""
 echo "=== Deployment complete ==="
 echo ""
+echo "Version:        $APP_VERSION"
 echo "App running at: https://localhost:$PORT"
 echo "Container name: $CONTAINER_NAME"
 echo "Data volume:    $VOLUME_NAME"

@@ -381,6 +381,25 @@ To completely reset the database, delete the `database.db` file (or the volume) 
 | `JWT_SECRET` | Secret key for JWT tokens | `dev-secret-key...` (change in production!) |
 | `DATABASE_PATH` | Path to SQLite database file | `database.db` |
 | `NODE_ENV` | Environment (`development` or `production`) | `development` |
+| `APP_VERSION` | Application version (set automatically during Docker build) | Read from `package.json` |
+
+## Versioning
+
+The app version is defined in the root `package.json` and flows to git tags, Docker image tags, the server health API, and the frontend UI.
+
+### Release Workflow
+
+1. Bump the version in root `package.json`
+2. Commit: `git commit -am "Bump version to X.Y.Z"`
+3. Tag: `npm run tag-release`
+4. Push: `git push && git push origin vX.Y.Z`
+5. Deploy: `./scripts/deploy.sh`
+
+### Checking the Running Version
+
+- **API**: `curl -sk https://localhost:3000/api/health` returns `{ "status": "ok", "version": "1.0.0" }`
+- **UI**: Version is displayed in the page footer
+- **Container label**: `podman inspect rewards-app --format '{{index .Config.Labels "org.opencontainers.image.version"}}'`
 
 ## Security Features
 

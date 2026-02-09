@@ -75,8 +75,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y podman
 
+      - name: Read app version
+        id: version
+        run: echo "APP_VERSION=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
       - name: Build container image
-        run: podman build -t rewards-app:ci .
+        run: podman build --build-arg APP_VERSION="${{ steps.version.outputs.APP_VERSION }}" -t rewards-app:ci .
 
       - name: Export image to tar for scanning
         run: podman save rewards-app:ci -o rewards-app.tar
