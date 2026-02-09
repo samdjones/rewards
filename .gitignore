@@ -5,6 +5,11 @@ dist/
 .DS_Store
 *.log
 
+# TLS certificates (generated at runtime)
+*.key
+*.cert
+*.pem
+
 # Playwright
 /client/test-results/
 /client/playwright-report/
