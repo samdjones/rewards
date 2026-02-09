@@ -1,5 +1,7 @@
 FROM node:20-alpine
 
+ARG APP_VERSION=unknown
+
 WORKDIR /app
 
 # Copy package files for all workspaces
@@ -25,6 +27,11 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV DATABASE_PATH=/data/database.db
 ENV CERT_DIR=/data
+ENV APP_VERSION=${APP_VERSION}
+
+LABEL org.opencontainers.image.version="${APP_VERSION}" \
+      org.opencontainers.image.title="Kids Reward Tracker" \
+      org.opencontainers.image.description="A web app for families to manage tasks, points, and rewards for children"
 
 EXPOSE 3000
 

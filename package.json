@@ -21,7 +21,8 @@
     "build:client": "npm run build -w client",
     "build:all": "npm run build:shared && npm run build:client && npm run build -w server && npm run copy-client",
     "copy-client": "mkdir -p server/dist/public && cp -r client/dist/* server/dist/public/",
-    "start": "node server/dist/server.js"
+    "start": "node server/dist/server.js",
+    "tag-release": "bash scripts/tag-release.sh"
   },
   "keywords": [
     "rewards",

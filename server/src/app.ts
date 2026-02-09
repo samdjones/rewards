@@ -2,6 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { authenticateToken } from './middleware/auth.js';
 import { attachFamilyInfo, requireFamily } from './middleware/familyAuth.js';
@@ -14,6 +15,20 @@ import activityRoutes from './routes/activity.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+function getAppVersion(): string {
+  if (process.env.APP_VERSION && process.env.APP_VERSION !== 'unknown') {
+    return process.env.APP_VERSION;
+  }
+  try {
+    const pkg = JSON.parse(readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
+    return pkg.version || 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+const APP_VERSION = getAppVersion();
 
 export const createApp = (): Express => {
   const app = express();
@@ -59,7 +74,7 @@ export const createApp = (): Express => {
   );
 
   app.get('/api/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok' });
+    res.json({ status: 'ok', version: APP_VERSION });
   });
 
   // Serve static files in production

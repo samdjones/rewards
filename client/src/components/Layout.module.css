@@ -86,6 +86,16 @@
     padding: 2rem;
 }
 
+.footer {
+    text-align: center;
+    padding: 1rem;
+}
+
+.version {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
 @media (max-width: 768px) {
     .header {
         padding: 1rem;

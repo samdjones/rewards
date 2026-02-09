@@ -67,6 +67,10 @@ const Layout = ({ children }) => {
       )}
 
       <main className={styles.main}>{children}</main>
+
+      <footer className={styles.footer}>
+        <span className={styles.version}>v{__APP_VERSION__}</span>
+      </footer>
     </div>
   );
 };
