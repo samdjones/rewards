@@ -64,11 +64,12 @@ test.describe('Dashboard', () => {
     await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
 
-    // Add task
+    // Add a daily recurring task (shows as checkbox on dashboard)
     await page.getByRole('link', { name: /Tasks/i }).click();
     await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
     await page.getByLabel(/Point Value/i).fill(taskPointValue.toString());
+    await page.getByLabel(/Repeat Schedule/i).selectOption('daily');
     await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard
@@ -94,11 +95,12 @@ test.describe('Dashboard', () => {
     await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
 
-    // Add task
+    // Add a daily recurring task (shows as checkbox on dashboard)
     await page.getByRole('link', { name: /Tasks/i }).click();
     await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
     await page.getByLabel(/Point Value/i).fill(taskPointValue.toString());
+    await page.getByLabel(/Repeat Schedule/i).selectOption('daily');
     await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard

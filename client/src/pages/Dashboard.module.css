@@ -154,6 +154,35 @@
   accent-color: #10b981;
 }
 
+.completeCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.completeBtn {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.completeBtn:hover {
+  background-color: #059669;
+}
+
+.completionCount {
+  font-size: 0.7rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
 .empty {
   text-align: center;
   padding: 3rem;

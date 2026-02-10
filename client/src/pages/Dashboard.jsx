@@ -55,7 +55,8 @@ const Dashboard = () => {
       const data = await tasksAPI.getCompletionsForDate(selectedDate);
       const completionMap = {};
       data.completions.forEach(c => {
-        completionMap[`${c.task_id}-${c.child_id}`] = true;
+        const key = `${c.task_id}-${c.child_id}`;
+        completionMap[key] = (completionMap[key] || 0) + 1;
       });
       setCompletedTasks(completionMap);
     } catch (_err) {
@@ -105,12 +106,17 @@ const Dashboard = () => {
         await tasksAPI.uncompleteForDate(taskId, childId, selectedDate);
         setCompletedTasks(prev => {
           const next = { ...prev };
-          delete next[key];
+          const count = (next[key] || 1) - 1;
+          if (count <= 0) {
+            delete next[key];
+          } else {
+            next[key] = count;
+          }
           return next;
         });
       } else {
         await tasksAPI.completeForDate(taskId, childId, selectedDate);
-        setCompletedTasks(prev => ({ ...prev, [key]: true }));
+        setCompletedTasks(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
       }
       loadChildren();
     } catch (err) {
@@ -118,12 +124,23 @@ const Dashboard = () => {
     }
   };
 
+  const handleCompleteNonRecurring = async (taskId, childId) => {
+    const key = `${taskId}-${childId}`;
+
+    try {
+      await tasksAPI.completeForDate(taskId, childId, selectedDate);
+      setCompletedTasks(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+      loadChildren();
+    } catch (err) {
+      alert(err.message || 'Failed to complete task');
+    }
+  };
+
   const getDailyPointsForChild = (childId) => {
     let points = 0;
     getTasksForDate(selectedDate).forEach(task => {
-      if (completedTasks[`${task.id}-${childId}`]) {
-        points += task.point_value;
-      }
+      const count = completedTasks[`${task.id}-${childId}`] || 0;
+      points += task.point_value * count;
     });
     return points;
   };
@@ -209,11 +226,27 @@ const Dashboard = () => {
                 </div>
                 {children.map(child => (
                   <div key={child.id} className={styles.taskCheckbox}>
-                    <input
-                      type="checkbox"
-                      checked={!!completedTasks[`${task.id}-${child.id}`]}
-                      onChange={() => handleToggleComplete(task.id, child.id)}
-                    />
+                    {task.repeat_schedule === 'none' ? (
+                      <div className={styles.completeCell}>
+                        <button
+                          className={styles.completeBtn}
+                          onClick={() => handleCompleteNonRecurring(task.id, child.id)}
+                        >
+                          +{task.point_value}
+                        </button>
+                        {completedTasks[`${task.id}-${child.id}`] > 0 && (
+                          <span className={styles.completionCount}>
+                            x{completedTasks[`${task.id}-${child.id}`]}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <input
+                        type="checkbox"
+                        checked={!!completedTasks[`${task.id}-${child.id}`]}
+                        onChange={() => handleToggleComplete(task.id, child.id)}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
