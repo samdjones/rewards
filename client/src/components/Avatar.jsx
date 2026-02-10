@@ -8,7 +8,7 @@ const Avatar = ({ profileImage, avatarColor, name, size = 40, className = '' }) 
     return (
       <div className={`${styles.avatar} ${className}`} style={sizeStyle}>
         <img
-          src={`/uploads/${profileImage}`}
+          src={profileImage}
           alt={name}
           className={styles.avatarImage}
         />

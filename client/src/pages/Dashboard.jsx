@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { childrenAPI } from '../api/children';
 import { tasksAPI } from '../api/tasks';
 import Avatar from '../components/Avatar';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [children, setChildren] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState({});
@@ -135,6 +137,16 @@ const Dashboard = () => {
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
+        {user?.family && (
+          <div className={styles.familyAvatar}>
+            <Avatar
+              profileImage={user.family.profile_image}
+              avatarColor="#6366f1"
+              name={user.family.name || 'F'}
+              size={40}
+            />
+          </div>
+        )}
         <h2>Dashboard</h2>
       </div>
 
@@ -173,7 +185,9 @@ const Dashboard = () => {
               <div className={styles.taskNameHeader}>Task</div>
               {children.map(child => (
                 <div key={child.id} className={styles.childHeader}>
-                  <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={28} />
+                  <div className={styles.childAvatar}>
+                    <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={28} />
+                  </div>
                   <span style={{ color: child.avatar_color }}>{child.name}</span>
                   <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} points</span>
                 </div>

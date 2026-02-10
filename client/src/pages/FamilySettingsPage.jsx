@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { familiesAPI } from '../api/families';
+import { uploadsAPI } from '../api/uploads';
 import Avatar from '../components/Avatar';
 import styles from './FamilySettingsPage.module.css';
 
@@ -11,6 +12,9 @@ const FamilySettingsPage = () => {
   const [members, setMembers] = useState([]);
   const [inviteCode, setInviteCode] = useState('');
   const [showInviteCode, setShowInviteCode] = useState(false);
+  const [familyImage, setFamilyImage] = useState(user?.family?.profile_image || null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -35,6 +39,48 @@ const FamilySettingsPage = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleFamilyImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only JPEG, PNG, and WebP images are allowed');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError('File too large. Maximum size is 2MB.');
+      return;
+    }
+
+    try {
+      setImageUploading(true);
+      setError('');
+      const data = await uploadsAPI.uploadFamilyImage(file);
+      setFamilyImage(data.profile_image);
+      await refreshUser();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setImageUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleFamilyImageRemove = async () => {
+    try {
+      setImageUploading(true);
+      setError('');
+      await uploadsAPI.removeFamilyImage();
+      setFamilyImage(null);
+      await refreshUser();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setImageUploading(false);
+    }
+  };
 
   const handleRegenerateCode = async () => {
     if (!confirm('Are you sure? The old invite code will stop working.')) return;
@@ -129,8 +175,43 @@ const FamilySettingsPage = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>{user?.family?.name}</h1>
-      <p className={styles.subtitle}>Family Settings</p>
+      <div className={styles.familyHeader}>
+        <div
+          className={`${styles.familyImageWrapper} ${isAdmin ? styles.familyImageClickable : ''}`}
+          onClick={isAdmin ? () => fileInputRef.current?.click() : undefined}
+          title={isAdmin ? 'Click to change family picture' : undefined}
+        >
+          <Avatar
+            profileImage={familyImage}
+            avatarColor="#6366f1"
+            name={user?.family?.name || 'F'}
+            size={80}
+          />
+          {isAdmin && <div className={styles.familyImageOverlay}>{imageUploading ? '...' : 'Edit'}</div>}
+        </div>
+        {isAdmin && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleFamilyImageUpload}
+            className={styles.hiddenInput}
+          />
+        )}
+        <div>
+          <h1 className={styles.title}>{user?.family?.name}</h1>
+          <p className={styles.subtitle}>Family Settings</p>
+        </div>
+        {isAdmin && familyImage && (
+          <button
+            onClick={handleFamilyImageRemove}
+            className={styles.btnSecondary}
+            disabled={imageUploading}
+          >
+            Remove Photo
+          </button>
+        )}
+      </div>
 
       {error && <div className={styles.error}>{error}</div>}
 

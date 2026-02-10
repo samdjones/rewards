@@ -75,6 +75,7 @@ export const createFamily = (req: Request, res: Response): void => {
       id: family!.id,
       name: family!.name,
       invite_code: family!.invite_code,
+      profile_image: family!.profile_image,
       created_at: family!.created_at,
     },
     role: 'admin',
@@ -104,6 +105,7 @@ export const getCurrentFamily = (req: Request, res: Response): void => {
     family: {
       id: family.id,
       name: family.name,
+      profile_image: family.profile_image,
       created_at: family.created_at,
       member_count: memberCount!.count,
     },
@@ -178,6 +180,7 @@ export const joinFamily = (req: Request, res: Response): void => {
     family: {
       id: family.id,
       name: family.name,
+      profile_image: family.profile_image,
       created_at: family.created_at,
     },
     role: 'member',

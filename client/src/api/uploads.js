@@ -53,5 +53,32 @@ export const uploadsAPI = {
       throw new Error(data.error || 'Failed to remove image');
     }
     return res.json();
+  },
+
+  uploadFamilyImage: async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`${API_URL}/uploads/families/current/profile-image`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to upload image');
+    }
+    return res.json();
+  },
+
+  removeFamilyImage: async () => {
+    const res = await fetch(`${API_URL}/uploads/families/current/profile-image`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to remove image');
+    }
+    return res.json();
   }
 };

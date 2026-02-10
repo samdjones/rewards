@@ -4,6 +4,7 @@ export interface Family {
   id: number;
   name: string;
   invite_code: string;
+  profile_image: string | null;
   created_at: string;
 }
 
