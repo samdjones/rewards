@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { rewardsAPI } from '../api/rewards';
-import { childrenAPI } from '../api/children';
 import Modal from '../components/Modal';
 import styles from './RewardsPage.module.css';
 
 const RewardsPage = () => {
   const [rewards, setRewards] = useState([]);
-  const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedReward, setSelectedReward] = useState(null);
   const [editingReward, setEditingReward] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -19,7 +15,6 @@ const RewardsPage = () => {
     point_cost: '',
     category: ''
   });
-  const [redeemData, setRedeemData] = useState({ selectedChildIds: [], notes: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -28,12 +23,8 @@ const RewardsPage = () => {
 
   const loadData = async () => {
     try {
-      const [rewardsRes, childrenRes] = await Promise.all([
-        rewardsAPI.getAll(),
-        childrenAPI.getAll()
-      ]);
-      setRewards(rewardsRes.rewards);
-      setChildren(childrenRes.children);
+      const data = await rewardsAPI.getAll();
+      setRewards(data.rewards);
     } catch (_err) {
       setError('Failed to load data');
     } finally {
@@ -60,39 +51,6 @@ const RewardsPage = () => {
     }
   };
 
-  const handleRedeem = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (redeemData.selectedChildIds.length === 0) {
-      setError('Please select at least one kid');
-      return;
-    }
-
-    try {
-      await rewardsAPI.redeem(selectedReward.id, redeemData.selectedChildIds, redeemData.notes);
-      setShowRedeemModal(false);
-      setRedeemData({ selectedChildIds: [], notes: '' });
-      setSelectedReward(null);
-      alert('Reward redeemed successfully!');
-      loadData();
-    } catch (_err) {
-      setError('Failed to save reward');
-    }
-  };
-
-  const toggleChildSelection = (childId) => {
-    setRedeemData(prev => {
-      const isSelected = prev.selectedChildIds.includes(childId);
-      return {
-        ...prev,
-        selectedChildIds: isSelected
-          ? prev.selectedChildIds.filter(id => id !== childId)
-          : [...prev.selectedChildIds, childId]
-      };
-    });
-  };
-
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this reward?')) return;
 
@@ -102,12 +60,6 @@ const RewardsPage = () => {
     } catch (_err) {
       alert('Failed to delete reward');
     }
-  };
-
-  const openRedeemModal = (reward) => {
-    setSelectedReward(reward);
-    setRedeemData({ selectedChildIds: [], notes: '' });
-    setShowRedeemModal(true);
   };
 
   const openEditModal = (reward) => {
@@ -171,9 +123,6 @@ const RewardsPage = () => {
                 </div>
               </div>
               <div className={styles.rewardActions}>
-                <button onClick={() => openRedeemModal(reward)} className={styles.redeemBtn}>
-                  Redeem
-                </button>
                 <button onClick={() => openEditModal(reward)} className={styles.editBtn}>
                   Edit
                 </button>
@@ -235,59 +184,6 @@ const RewardsPage = () => {
             </div>
 
             <button type="submit" className={styles.submitBtn}>Add Reward</button>
-          </form>
-        </Modal>
-      )}
-
-      {showRedeemModal && selectedReward && (
-        <Modal onClose={() => setShowRedeemModal(false)} title={`Redeem: ${selectedReward.name}`}>
-          {error && <div className={styles.error}>{error}</div>}
-          <form onSubmit={handleRedeem} className={styles.form}>
-            <div className={styles.formGroup}>
-              <label>Select Kids *</label>
-              <div className={styles.childCheckboxes}>
-                {children.map(child => {
-                  const hasEnoughPoints = child.current_points >= selectedReward.point_cost;
-                  const isSelected = redeemData.selectedChildIds.includes(child.id);
-                  return (
-                    <label
-                      key={child.id}
-                      className={`${styles.childCheckbox} ${!hasEnoughPoints ? styles.insufficientChild : ''}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleChildSelection(child.id)}
-                        disabled={!hasEnoughPoints}
-                      />
-                      <span className={styles.childName}>{child.name}</span>
-                      <span className={styles.childPoints}>
-                        {child.current_points} pts
-                        {!hasEnoughPoints && <span className={styles.needMore}> (need {selectedReward.point_cost})</span>}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="notes">Notes (optional)</label>
-              <textarea
-                id="notes"
-                rows="2"
-                value={redeemData.notes}
-                onChange={(e) => setRedeemData({ ...redeemData, notes: e.target.value })}
-              />
-            </div>
-
-            {redeemData.selectedChildIds.length > 0 && (
-              <div className={styles.costInfo}>
-                Will deduct {selectedReward.point_cost} points from {redeemData.selectedChildIds.length} kid{redeemData.selectedChildIds.length > 1 ? 's' : ''} ({selectedReward.point_cost * redeemData.selectedChildIds.length} total)
-              </div>
-            )}
-
-            <button type="submit" className={styles.submitBtn}>Redeem Reward</button>
           </form>
         </Modal>
       )}

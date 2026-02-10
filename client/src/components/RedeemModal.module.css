@@ -1,0 +1,83 @@
+.pointsBanner {
+  background-color: #f0f9ff;
+  color: #1e40af;
+  padding: 0.75rem;
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 2rem;
+}
+
+.rewardList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rewardItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.rewardItem:hover {
+  background: #f3f4f6;
+}
+
+.insufficientItem {
+  opacity: 0.6;
+}
+
+.rewardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.rewardName {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.rewardDesc {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.rewardCost {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.redeemBtn {
+  background-color: #8b5cf6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.redeemBtn:hover:not(:disabled) {
+  background-color: #7c3aed;
+}
+
+.redeemBtn:disabled {
+  background-color: #c4b5fd;
+  cursor: not-allowed;
+}

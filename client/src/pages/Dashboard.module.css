@@ -98,6 +98,27 @@
   font-weight: 600;
 }
 
+.totalPoints {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.redeemBtn {
+  background-color: #8b5cf6;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.redeemBtn:hover {
+  background-color: #7c3aed;
+}
+
 .taskRow {
   display: grid;
   grid-template-columns: 1fr repeat(var(--child-count, 2), minmax(80px, 100px));

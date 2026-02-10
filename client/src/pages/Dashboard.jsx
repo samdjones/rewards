@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { childrenAPI } from '../api/children';
+import { rewardsAPI } from '../api/rewards';
 import { tasksAPI } from '../api/tasks';
 import Avatar from '../components/Avatar';
+import RedeemModal from '../components/RedeemModal';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [children, setChildren] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [rewards, setRewards] = useState([]);
   const [completedTasks, setCompletedTasks] = useState({});
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState('');
+  const [redeemChild, setRedeemChild] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
@@ -31,12 +35,14 @@ const Dashboard = () => {
 
   const loadData = useCallback(async () => {
     try {
-      const [childrenData, tasksData] = await Promise.all([
+      const [childrenData, tasksData, rewardsData] = await Promise.all([
         childrenAPI.getAll(),
-        tasksAPI.getAll()
+        tasksAPI.getAll(),
+        rewardsAPI.getAll()
       ]);
       setChildren(childrenData.children);
       setTasks(tasksData.tasks);
+      setRewards(rewardsData.rewards);
     } catch (_err) {
       setError('Failed to load data');
     } finally {
@@ -189,7 +195,9 @@ const Dashboard = () => {
                     <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={28} />
                   </div>
                   <span style={{ color: child.avatar_color }}>{child.name}</span>
-                  <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} points</span>
+                  <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} pts today</span>
+                  <span className={styles.totalPoints}>{child.current_points} pts total</span>
+                  <button className={styles.redeemBtn} onClick={() => setRedeemChild(child)}>Redeem</button>
                 </div>
               ))}
             </div>
@@ -212,6 +220,15 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
+      )}
+
+      {redeemChild && (
+        <RedeemModal
+          child={redeemChild}
+          rewards={rewards}
+          onClose={() => setRedeemChild(null)}
+          onRedeemed={() => { setRedeemChild(null); loadData(); }}
+        />
       )}
     </div>
   );

@@ -109,19 +109,21 @@ test.describe('Rewards CRUD Operations', () => {
     // Add a cheap reward (cost <= earned points)
     await page.getByRole('link', { name: /Rewards/i }).click();
     await addReward(page, { name: 'Small Treat', cost: 5 });
-    await page.reload();
 
-    // Click Redeem
+    // Navigate to Kids page and click Redeem on the kid card
+    await page.getByRole('link', { name: /Kids/i }).click();
+    await page.waitForTimeout(500);
     await page.getByRole('button', { name: 'Redeem' }).click();
 
-    // Select the kid (checkbox inside label)
-    const childLabel = page.locator('label').filter({ hasText: testKids[0].name });
-    await childLabel.locator('input[type="checkbox"]').check();
+    // Modal should show the reward; click Redeem on the reward
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByText('Small Treat')).toBeVisible();
 
     // Handle success alert
     page.once('dialog', dialog => dialog.accept());
 
-    await page.getByRole('button', { name: 'Redeem Reward' }).click();
+    // Click the Redeem button for the reward in the modal
+    await page.getByRole('dialog').getByRole('button', { name: 'Redeem' }).click();
     await page.waitForTimeout(500);
   });
 
@@ -135,18 +137,16 @@ test.describe('Rewards CRUD Operations', () => {
     // Add an expensive reward
     await page.getByRole('link', { name: /Rewards/i }).click();
     await addReward(page, testRewards[1]); // Movie Night - 100 pts
-    await page.reload();
 
-    // Click Redeem
+    // Navigate to Kids page and click Redeem on the kid card
+    await page.getByRole('link', { name: /Kids/i }).click();
+    await page.waitForTimeout(500);
     await page.getByRole('button', { name: 'Redeem' }).click();
 
-    // Checkbox should be disabled since kid has 0 points
-    const childLabel = page.locator('label').filter({ hasText: testKids[0].name });
-    const checkbox = childLabel.locator('input[type="checkbox"]');
-    await expect(checkbox).toBeDisabled();
-
-    // "(need N)" text should be shown
-    await expect(childLabel.getByText(/\(need \d+\)/)).toBeVisible();
+    // Modal should show - reward's Redeem button should be disabled
+    await expect(page.getByRole('dialog')).toBeVisible();
+    const rewardRedeem = page.getByRole('dialog').getByRole('button', { name: 'Redeem' });
+    await expect(rewardRedeem).toBeDisabled();
   });
 
   test('should cancel reward creation', async ({ page }) => {

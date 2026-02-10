@@ -81,7 +81,7 @@ test.describe('Dashboard', () => {
 
     // Wait for API update and points to reflect
     await expect(checkbox).toBeChecked();
-    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*points?`, 'i')).first()).toBeVisible();
+    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*pts`, 'i')).first()).toBeVisible();
   });
 
   test('should decrease points when unchecking task', async ({ page }) => {
@@ -111,14 +111,14 @@ test.describe('Dashboard', () => {
 
     // Wait for check to complete
     await expect(checkbox).toBeChecked();
-    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*points?`, 'i')).first()).toBeVisible();
+    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*pts`, 'i')).first()).toBeVisible();
 
     // Uncheck task
     await checkbox.click();
 
     // Wait for uncheck to complete
     await expect(checkbox).not.toBeChecked();
-    await expect(page.getByText(/\b0\s*points?/i).first()).toBeVisible();
+    await expect(page.getByText(/\b0\s*pts/i).first()).toBeVisible();
   });
 
   test('should filter tasks by date (today)', async ({ page }) => {
