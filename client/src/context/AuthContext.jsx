@@ -58,6 +58,7 @@ export const AuthProvider = ({ children }) => {
         id: data.family.id,
         name: data.family.name,
         role: data.role,
+        profile_image: data.family.profile_image,
       },
     }));
     return data;
@@ -72,6 +73,7 @@ export const AuthProvider = ({ children }) => {
         id: data.family.id,
         name: data.family.name,
         role: data.role,
+        profile_image: data.family.profile_image,
       },
     }));
     return data;

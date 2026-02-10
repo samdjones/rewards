@@ -8,6 +8,7 @@ interface FamilyMembershipRow {
   family_id: number;
   role: FamilyRole;
   family_name: string;
+  family_profile_image: string | null;
 }
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -128,7 +129,7 @@ export const me = (req: Request, res: Response): void => {
     const membership = db
       .prepare<FamilyMembershipRow>(
         `
-      SELECT fm.family_id, fm.role, f.name as family_name
+      SELECT fm.family_id, fm.role, f.name as family_name, f.profile_image as family_profile_image
       FROM family_members fm
       JOIN families f ON fm.family_id = f.id
       WHERE fm.user_id = ?
@@ -144,6 +145,7 @@ export const me = (req: Request, res: Response): void => {
               id: membership.family_id,
               name: membership.family_name,
               role: membership.role,
+              profile_image: membership.family_profile_image,
             }
           : null,
       },

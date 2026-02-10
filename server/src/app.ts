@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { authenticateToken } from './middleware/auth.js';
 import { attachFamilyInfo, requireFamily } from './middleware/familyAuth.js';
-import { UPLOADS_DIR } from './middleware/upload.js';
 import authRoutes from './routes/auth.js';
 import familyRoutes from './routes/families.js';
 import childrenRoutes from './routes/children.js';
@@ -80,9 +79,6 @@ export const createApp = (): Express => {
   app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', version: APP_VERSION });
   });
-
-  // Serve uploaded images
-  app.use('/uploads', express.static(UPLOADS_DIR));
 
   // Serve static files in production
   const publicPath = path.join(__dirname, 'public');

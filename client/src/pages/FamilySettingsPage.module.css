@@ -4,6 +4,45 @@
   padding: 2rem 1rem;
 }
 
+.familyHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.familyImageWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.familyImageClickable {
+  cursor: pointer;
+}
+
+.familyImageOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 2px 0;
+  border-radius: 0 0 50% 50%;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.familyImageClickable:hover .familyImageOverlay {
+  opacity: 1;
+}
+
+.hiddenInput {
+  display: none;
+}
+
 .title {
   font-size: 1.75rem;
   color: #1f2937;
@@ -12,7 +51,7 @@
 
 .subtitle {
   color: #6b7280;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 .loading {

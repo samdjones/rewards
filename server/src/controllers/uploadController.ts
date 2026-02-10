@@ -1,11 +1,7 @@
 import type { Request, Response } from 'express';
 import type { Child } from '@rewards/shared';
 import db from '../db/wrapper.js';
-import { processAndSaveImage, deleteImage } from '../utils/imageProcessor.js';
-
-interface ProfileImageRow {
-  profile_image: string | null;
-}
+import { processImage } from '../utils/imageProcessor.js';
 
 export const uploadUserProfileImage = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -14,22 +10,12 @@ export const uploadUserProfileImage = async (req: Request, res: Response): Promi
       return;
     }
 
-    // Get old image to delete
-    const existing = db
-      .prepare<ProfileImageRow>('SELECT profile_image FROM users WHERE id = ?')
-      .get(req.userId);
-
-    const filename = await processAndSaveImage(req.file.buffer, 'user', req.userId!);
+    const dataUrl = await processImage(req.file.buffer);
 
     db.prepare('UPDATE users SET profile_image = ? WHERE id = ?')
-      .run(filename, req.userId);
+      .run(dataUrl, req.userId);
 
-    // Delete old image
-    if (existing?.profile_image) {
-      deleteImage(existing.profile_image);
-    }
-
-    res.json({ profile_image: filename });
+    res.json({ profile_image: dataUrl });
   } catch (error) {
     console.error('Upload user image error:', error);
     res.status(500).json({ error: 'Failed to upload image' });
@@ -38,14 +24,6 @@ export const uploadUserProfileImage = async (req: Request, res: Response): Promi
 
 export const deleteUserProfileImage = (req: Request, res: Response): void => {
   try {
-    const existing = db
-      .prepare<ProfileImageRow>('SELECT profile_image FROM users WHERE id = ?')
-      .get(req.userId);
-
-    if (existing?.profile_image) {
-      deleteImage(existing.profile_image);
-    }
-
     db.prepare('UPDATE users SET profile_image = NULL WHERE id = ?')
       .run(req.userId);
 
@@ -74,17 +52,12 @@ export const uploadChildProfileImage = async (req: Request, res: Response): Prom
       return;
     }
 
-    const filename = await processAndSaveImage(req.file.buffer, 'child', child.id);
+    const dataUrl = await processImage(req.file.buffer);
 
     db.prepare('UPDATE children SET profile_image = ? WHERE id = ?')
-      .run(filename, id);
+      .run(dataUrl, id);
 
-    // Delete old image
-    if (child.profile_image) {
-      deleteImage(child.profile_image);
-    }
-
-    res.json({ profile_image: filename });
+    res.json({ profile_image: dataUrl });
   } catch (error) {
     console.error('Upload child image error:', error);
     res.status(500).json({ error: 'Failed to upload image' });
@@ -104,16 +77,43 @@ export const deleteChildProfileImage = (req: Request, res: Response): void => {
       return;
     }
 
-    if (child.profile_image) {
-      deleteImage(child.profile_image);
-    }
-
     db.prepare('UPDATE children SET profile_image = NULL WHERE id = ?')
       .run(id);
 
     res.json({ message: 'Profile image removed' });
   } catch (error) {
     console.error('Delete child image error:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
+  }
+};
+
+export const uploadFamilyProfileImage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No image file provided' });
+      return;
+    }
+
+    const dataUrl = await processImage(req.file.buffer);
+
+    db.prepare('UPDATE families SET profile_image = ? WHERE id = ?')
+      .run(dataUrl, req.familyId);
+
+    res.json({ profile_image: dataUrl });
+  } catch (error) {
+    console.error('Upload family image error:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+};
+
+export const deleteFamilyProfileImage = (req: Request, res: Response): void => {
+  try {
+    db.prepare('UPDATE families SET profile_image = NULL WHERE id = ?')
+      .run(req.familyId);
+
+    res.json({ message: 'Family image removed' });
+  } catch (error) {
+    console.error('Delete family image error:', error);
     res.status(500).json({ error: 'Failed to delete image' });
   }
 };

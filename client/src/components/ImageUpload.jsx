@@ -32,7 +32,7 @@ const ImageUpload = ({ currentImage, onUpload, onRemove, uploading }) => {
     <div className={styles.container}>
       <div className={styles.preview}>
         {currentImage ? (
-          <img src={`/uploads/${currentImage}`} alt="Profile" className={styles.previewImage} />
+          <img src={currentImage} alt="Profile" className={styles.previewImage} />
         ) : (
           <div className={styles.placeholder}>No photo</div>
         )}

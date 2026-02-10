@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
 import type { Child } from '@rewards/shared';
 import db from '../db/wrapper.js';
-import { deleteImage } from '../utils/imageProcessor.js';
 
 export const getChildren = (req: Request, res: Response): void => {
   try {
@@ -113,10 +112,6 @@ export const deleteChild = (req: Request, res: Response): void => {
     if (!child) {
       res.status(404).json({ error: 'Child not found' });
       return;
-    }
-
-    if (child.profile_image) {
-      deleteImage(child.profile_image);
     }
 
     db.prepare('DELETE FROM children WHERE id = ?').run(id);

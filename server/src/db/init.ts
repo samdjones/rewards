@@ -214,6 +214,49 @@ const runMigrations = (): void => {
     console.log('Migration completed: profile_image added');
     saveDatabase();
   }
+
+  // Migration: Add profile_image column to families
+  const familiesInfo = db.exec('PRAGMA table_info(families)');
+  const familiesCols =
+    familiesInfo.length > 0
+      ? familiesInfo[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!familiesCols.includes('profile_image')) {
+    console.log('Running migration: Adding profile_image to families...');
+
+    db.run('ALTER TABLE families ADD COLUMN profile_image TEXT');
+
+    console.log('Migration completed: families profile_image added');
+    saveDatabase();
+  }
+
+  // Migration: Convert filename-based profile_image values to NULL
+  // Old values are filenames like "user_1_123456.webp", new values are data URLs starting with "data:"
+  const hasOldUserImages = db.exec(
+    "SELECT COUNT(*) as count FROM users WHERE profile_image IS NOT NULL AND profile_image NOT LIKE 'data:%'"
+  );
+  const hasOldChildImages = db.exec(
+    "SELECT COUNT(*) as count FROM children WHERE profile_image IS NOT NULL AND profile_image NOT LIKE 'data:%'"
+  );
+  const hasOldFamilyImages = db.exec(
+    "SELECT COUNT(*) as count FROM families WHERE profile_image IS NOT NULL AND profile_image NOT LIKE 'data:%'"
+  );
+
+  const oldUserCount = hasOldUserImages.length > 0 ? (hasOldUserImages[0].values[0][0] as number) : 0;
+  const oldChildCount = hasOldChildImages.length > 0 ? (hasOldChildImages[0].values[0][0] as number) : 0;
+  const oldFamilyCount = hasOldFamilyImages.length > 0 ? (hasOldFamilyImages[0].values[0][0] as number) : 0;
+
+  if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
+    console.log('Running migration: Clearing old filename-based profile images...');
+
+    db.run("UPDATE users SET profile_image = NULL WHERE profile_image IS NOT NULL AND profile_image NOT LIKE 'data:%'");
+    db.run("UPDATE children SET profile_image = NULL WHERE profile_image IS NOT NULL AND profile_image NOT LIKE 'data:%'");
+    db.run("UPDATE families SET profile_image = NULL WHERE profile_image IS NOT NULL AND profile_image NOT LIKE 'data:%'");
+
+    console.log('Migration completed: old profile images cleared');
+    saveDatabase();
+  }
 };
 
 const initDatabase = async (): Promise<Database> => {
