@@ -97,6 +97,26 @@ CREATE TABLE IF NOT EXISTS redemptions (
   FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE
 );
 
+-- Kiosk Codes Table (temporary pairing codes)
+CREATE TABLE IF NOT EXISTS kiosk_codes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code TEXT UNIQUE NOT NULL,
+  session_token TEXT UNIQUE NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Kiosk Sessions Table (paired kiosk displays)
+CREATE TABLE IF NOT EXISTS kiosk_sessions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  family_id INTEGER NOT NULL,
+  session_token TEXT UNIQUE NOT NULL,
+  paired_by INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
+  FOREIGN KEY (paired_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Point Adjustments Table
 CREATE TABLE IF NOT EXISTS point_adjustments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

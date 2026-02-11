@@ -247,6 +247,39 @@ const runMigrations = (): void => {
   const oldChildCount = hasOldChildImages.length > 0 ? (hasOldChildImages[0].values[0][0] as number) : 0;
   const oldFamilyCount = hasOldFamilyImages.length > 0 ? (hasOldFamilyImages[0].values[0][0] as number) : 0;
 
+  // Migration: Add kiosk tables
+  const kioskTableCheck = db.exec(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='kiosk_codes'"
+  );
+  if (kioskTableCheck.length === 0) {
+    console.log('Running migration: Adding kiosk tables...');
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS kiosk_codes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        session_token TEXT UNIQUE NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS kiosk_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        family_id INTEGER NOT NULL,
+        session_token TEXT UNIQUE NOT NULL,
+        paired_by INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
+        FOREIGN KEY (paired_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+
+    console.log('Migration completed: kiosk tables added');
+    saveDatabase();
+  }
+
   if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
     console.log('Running migration: Clearing old filename-based profile images...');
 

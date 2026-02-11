@@ -1,0 +1,211 @@
+.kiosk {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #94a3b8;
+}
+
+/* Pairing view */
+.pairingView {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.pairingTitle {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.pairingInstructions {
+  font-size: 1.25rem;
+  color: #64748b;
+  text-align: center;
+  margin: 0;
+}
+
+.codeDisplay {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.codeChar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 6.5rem;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  font-size: 3.5rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: #e2e8f0;
+  letter-spacing: 0;
+}
+
+.timer {
+  font-size: 1.125rem;
+  color: #64748b;
+}
+
+/* Dashboard view */
+.dashboardView {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 2rem;
+  overflow: auto;
+}
+
+.dashHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #1e293b;
+}
+
+.familyName {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+  color: #f1f5f9;
+}
+
+.dateDisplay {
+  margin-left: auto;
+  font-size: 1.125rem;
+  color: #94a3b8;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #475569;
+}
+
+/* Task grid */
+.taskGrid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gridHeader {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(var(--child-count, 2), 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  border-bottom: 2px solid #334155;
+}
+
+.taskLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: end;
+}
+
+.childCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.childName {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.childDailyPts {
+  font-size: 0.9rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.childTotalPts {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.gridRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(var(--child-count, 2), 1fr);
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #1e293b;
+  align-items: center;
+}
+
+.taskCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.taskName {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.taskPts {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.statusCell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.completedBadge {
+  background: #065f46;
+  color: #6ee7b7;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.pendingBadge {
+  color: #475569;
+  font-size: 1.25rem;
+}
+
+.checkMark {
+  color: #10b981;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.pendingMark {
+  color: #475569;
+  font-size: 1.5rem;
+}
