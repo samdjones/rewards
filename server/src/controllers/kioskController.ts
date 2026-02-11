@@ -19,11 +19,12 @@ const cleanupExpiredCodes = (): void => {
   db.prepare('DELETE FROM kiosk_codes WHERE expires_at < datetime("now")').run();
 };
 
-export const generateCode = (_req: Request, res: Response): void => {
+export const generateCode = (req: Request, res: Response): void => {
   try {
     cleanupExpiredCodes();
 
-    const sessionToken = crypto.randomUUID();
+    // Reuse session_token if provided (code refresh), otherwise create new
+    const sessionToken = (req.body?.session_token as string) || crypto.randomUUID();
     let code = generateKioskCode();
 
     // Retry if code collision (unlikely)
@@ -35,13 +36,17 @@ export const generateCode = (_req: Request, res: Response): void => {
       code = generateKioskCode();
     }
 
-    const expiresAt = new Date(Date.now() + CODE_TTL_MINUTES * 60 * 1000).toISOString();
+    const expiresAtDate = new Date(Date.now() + CODE_TTL_MINUTES * 60 * 1000);
+    const expiresAt = expiresAtDate.toISOString().replace('T', ' ').replace('Z', '');
+
+    // Remove any old code for this session token before inserting new one
+    db.prepare('DELETE FROM kiosk_codes WHERE session_token = ?').run(sessionToken);
 
     db.prepare(
       'INSERT INTO kiosk_codes (code, session_token, expires_at) VALUES (?, ?, ?)'
     ).run(code, sessionToken, expiresAt);
 
-    res.json({ code, session_token: sessionToken, expires_at: expiresAt });
+    res.json({ code, session_token: sessionToken, expires_at: expiresAtDate.toISOString() });
   } catch (error) {
     console.error('Generate kiosk code error:', error);
     res.status(500).json({ error: 'Server error' });
@@ -92,7 +97,6 @@ export const checkStatus = (req: Request, res: Response): void => {
 export const pairKiosk = (req: Request, res: Response): void => {
   try {
     const { code } = req.body;
-
     if (!code || typeof code !== 'string') {
       res.status(400).json({ error: 'Pairing code is required' });
       return;

@@ -1,10 +1,12 @@
 const API_URL = '/api';
 
 export const kioskAPI = {
-  generateCode: async () => {
+  generateCode: async (sessionToken) => {
     const res = await fetch(`${API_URL}/kiosk/code`, {
       method: 'POST',
-      credentials: 'include'
+      headers: sessionToken ? { 'Content-Type': 'application/json' } : {},
+      credentials: 'include',
+      body: sessionToken ? JSON.stringify({ session_token: sessionToken }) : undefined
     });
     if (!res.ok) throw new Error('Failed to generate kiosk code');
     return res.json();

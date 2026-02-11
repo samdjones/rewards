@@ -17,12 +17,15 @@ const KioskPage = () => {
   const pollRef = useRef(null);
   const refreshRef = useRef(null);
   const countdownRef = useRef(null);
+  const sessionTokenRef = useRef('');
 
   const requestCode = useCallback(async () => {
     try {
-      const data = await kioskAPI.generateCode();
+      // Pass existing session token so code refresh keeps the same session
+      const data = await kioskAPI.generateCode(sessionTokenRef.current || undefined);
       setCode(data.code);
       setSessionToken(data.session_token);
+      sessionTokenRef.current = data.session_token;
       setExpiresAt(new Date(data.expires_at));
       setState('pairing');
     } catch (_err) {
