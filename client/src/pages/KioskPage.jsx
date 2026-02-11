@@ -18,6 +18,7 @@ const KioskPage = () => {
   const refreshRef = useRef(null);
   const countdownRef = useRef(null);
   const sessionTokenRef = useRef('');
+  const requestCodeRef = useRef(null);
 
   const requestCode = useCallback(async () => {
     try {
@@ -30,9 +31,11 @@ const KioskPage = () => {
       setState('pairing');
     } catch (_err) {
       // Retry after a delay
-      setTimeout(requestCode, 5000);
+      setTimeout(() => requestCodeRef.current(), 5000);
     }
   }, []);
+
+  useEffect(() => { requestCodeRef.current = requestCode; }, [requestCode]);
 
   // Try to load dashboard data (in case we're already paired via cookie)
   useEffect(() => {
