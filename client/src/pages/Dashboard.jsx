@@ -136,6 +136,27 @@ const Dashboard = () => {
     }
   };
 
+  const handleUndoNonRecurring = async (taskId, childId) => {
+    const key = `${taskId}-${childId}`;
+
+    try {
+      await tasksAPI.uncompleteForDate(taskId, childId, selectedDate);
+      setCompletedTasks(prev => {
+        const next = { ...prev };
+        const count = (next[key] || 1) - 1;
+        if (count <= 0) {
+          delete next[key];
+        } else {
+          next[key] = count;
+        }
+        return next;
+      });
+      loadChildren();
+    } catch (err) {
+      alert(err.message || 'Failed to undo completion');
+    }
+  };
+
   const getDailyPointsForChild = (childId) => {
     let points = 0;
     getTasksForDate(selectedDate).forEach(task => {
@@ -228,12 +249,22 @@ const Dashboard = () => {
                   <div key={child.id} className={styles.taskCheckbox}>
                     {task.repeat_schedule === 'none' ? (
                       <div className={styles.completeCell}>
-                        <button
-                          className={styles.completeBtn}
-                          onClick={() => handleCompleteNonRecurring(task.id, child.id)}
-                        >
-                          +{task.point_value}
-                        </button>
+                        <div className={styles.completeBtnRow}>
+                          <button
+                            className={styles.completeBtn}
+                            onClick={() => handleCompleteNonRecurring(task.id, child.id)}
+                          >
+                            +{task.point_value}
+                          </button>
+                          {completedTasks[`${task.id}-${child.id}`] > 0 && (
+                            <button
+                              className={styles.undoBtn}
+                              onClick={() => handleUndoNonRecurring(task.id, child.id)}
+                            >
+                              −{task.point_value}
+                            </button>
+                          )}
+                        </div>
                         {completedTasks[`${task.id}-${child.id}`] > 0 && (
                           <span className={styles.completionCount}>
                             x{completedTasks[`${task.id}-${child.id}`]}
