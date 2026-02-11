@@ -180,21 +180,6 @@ const KioskPage = () => {
   return (
     <div className={styles.kiosk}>
       <div className={styles.dashboardView}>
-        <div className={styles.dashHeader}>
-          {family?.profile_image && (
-            <Avatar
-              profileImage={family.profile_image}
-              avatarColor="#6366f1"
-              name={family.name || 'F'}
-              size={96}
-            />
-          )}
-          <h1 className={styles.familyName}>{familyName}</h1>
-          <span className={styles.dateDisplay}>
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </span>
-        </div>
-
         {(!children || children.length === 0) ? (
           <div className={styles.emptyState}>No kids added yet</div>
         ) : tasksForToday.length === 0 ? (
@@ -202,7 +187,18 @@ const KioskPage = () => {
         ) : (
           <div className={styles.taskGrid} style={{ '--child-count': children.length }}>
             <div className={styles.gridHeader}>
-              <div className={styles.taskLabel}>Task</div>
+              <div className={styles.familyCol}>
+                <Avatar
+                  profileImage={family?.profile_image}
+                  avatarColor="#6366f1"
+                  name={family?.name || 'F'}
+                  size={72}
+                />
+                <span className={styles.familyName}>{familyName}</span>
+                <span className={styles.dateDisplay}>
+                  {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                </span>
+              </div>
               {children.map(child => (
                 <div key={child.id} className={styles.childCol}>
                   <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={72} />
