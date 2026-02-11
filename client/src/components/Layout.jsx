@@ -19,6 +19,7 @@ const Layout = ({ children }) => {
     navigate("/login");
   };
 
+  const isKiosk = location.pathname === '/kiosk';
   const isActive = (path) => location.pathname === path;
 
   // Close dropdown on outside click
@@ -57,6 +58,10 @@ const Layout = ({ children }) => {
       setUploading(false);
     }
   };
+
+  if (isKiosk) {
+    return <>{children}</>;
+  }
 
   return (
     <div className={styles.layout}>

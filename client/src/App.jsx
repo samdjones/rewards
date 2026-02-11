@@ -13,6 +13,7 @@ import KidsPage from "./pages/KidsPage";
 import TasksPage from "./pages/TasksPage";
 import RewardsPage from "./pages/RewardsPage";
 import ChildDetailPage from "./pages/ChildDetailPage";
+import KioskPage from "./pages/KioskPage";
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
                 </FamilyGuard>
               }
             />
+            <Route path="/kiosk" element={<KioskPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

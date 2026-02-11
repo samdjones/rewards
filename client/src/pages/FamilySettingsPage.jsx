@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { familiesAPI } from '../api/families';
 import { uploadsAPI } from '../api/uploads';
+import { kioskAPI } from '../api/kiosk';
 import Avatar from '../components/Avatar';
 import styles from './FamilySettingsPage.module.css';
 
@@ -15,6 +16,8 @@ const FamilySettingsPage = () => {
   const [familyImage, setFamilyImage] = useState(user?.family?.profile_image || null);
   const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const [kioskCode, setKioskCode] = useState('');
+  const [kioskSessions, setKioskSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -28,6 +31,13 @@ const FamilySettingsPage = () => {
       if (isAdmin) {
         const codeData = await familiesAPI.getInviteCode();
         setInviteCode(codeData.invite_code);
+
+        try {
+          const sessions = await kioskAPI.getSessions();
+          setKioskSessions(sessions);
+        } catch (_err) {
+          // Kiosk sessions are non-critical
+        }
       }
     } catch (err) {
       setError(err.message);
@@ -140,6 +150,37 @@ const FamilySettingsPage = () => {
     }
   };
 
+  const handlePairKiosk = async () => {
+    if (!kioskCode.trim()) return;
+
+    try {
+      setActionLoading(true);
+      setError('');
+      await kioskAPI.pair(kioskCode.trim().toUpperCase());
+      setKioskCode('');
+      const sessions = await kioskAPI.getSessions();
+      setKioskSessions(sessions);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUnpairKiosk = async (sessionId) => {
+    if (!confirm('Remove this kiosk display?')) return;
+
+    try {
+      setActionLoading(true);
+      await kioskAPI.removeSession(sessionId);
+      setKioskSessions(prev => prev.filter(s => s.id !== sessionId));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDeleteFamily = async () => {
     if (!confirm('Are you sure you want to DELETE this family? This will remove all children, tasks, rewards, and history. This cannot be undone!')) return;
     if (!confirm('This is your last warning. All family data will be permanently deleted. Continue?')) return;
@@ -248,6 +289,57 @@ const FamilySettingsPage = () => {
               </button>
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Kiosk Display Section (Admin Only) */}
+      {isAdmin && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Kiosk Display</h2>
+          <p className={styles.sectionDescription}>
+            Pair a wall-mounted screen to show a read-only dashboard. Open <code>/kiosk</code> on the display device and enter the code shown.
+          </p>
+
+          <div className={styles.kioskPairBox}>
+            <input
+              type="text"
+              value={kioskCode}
+              onChange={(e) => setKioskCode(e.target.value.toUpperCase())}
+              placeholder="Enter pairing code"
+              className={styles.kioskInput}
+              maxLength={6}
+            />
+            <button
+              onClick={handlePairKiosk}
+              className={styles.btnSecondary}
+              disabled={actionLoading || kioskCode.trim().length < 6}
+            >
+              Pair
+            </button>
+          </div>
+
+          {kioskSessions.length > 0 && (
+            <div className={styles.kioskSessionsList}>
+              <h3 className={styles.kioskSessionsTitle}>Paired Displays</h3>
+              {kioskSessions.map(session => (
+                <div key={session.id} className={styles.kioskSessionItem}>
+                  <div className={styles.kioskSessionInfo}>
+                    <span>Paired by {session.paired_by_name}</span>
+                    <span className={styles.kioskSessionDate}>
+                      {new Date(session.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleUnpairKiosk(session.id)}
+                    className={`${styles.btnSmall} ${styles.btnDanger}`}
+                    disabled={actionLoading}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

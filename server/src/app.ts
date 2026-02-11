@@ -14,6 +14,7 @@ import tasksRoutes from './routes/tasks.js';
 import rewardsRoutes from './routes/rewards.js';
 import activityRoutes from './routes/activity.js';
 import uploadRoutes from './routes/uploads.js';
+import kioskRoutes from './routes/kiosk.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,6 +76,7 @@ export const createApp = (): Express => {
     activityRoutes
   );
   app.use('/api/uploads', authenticateToken, attachFamilyInfo, uploadRoutes);
+  app.use('/api/kiosk', kioskRoutes);
 
   app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', version: APP_VERSION });
