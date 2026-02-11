@@ -186,7 +186,7 @@ const KioskPage = () => {
               profileImage={family.profile_image}
               avatarColor="#6366f1"
               name={family.name || 'F'}
-              size={48}
+              size={96}
             />
           )}
           <h1 className={styles.familyName}>{familyName}</h1>
@@ -205,7 +205,7 @@ const KioskPage = () => {
               <div className={styles.taskLabel}>Task</div>
               {children.map(child => (
                 <div key={child.id} className={styles.childCol}>
-                  <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={36} />
+                  <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={72} />
                   <span className={styles.childName} style={{ color: child.avatar_color }}>{child.name}</span>
                   <span className={styles.childDailyPts}>{getDailyPoints(child.id)} pts today</span>
                   <span className={styles.childTotalPts}>{child.current_points} pts total</span>
