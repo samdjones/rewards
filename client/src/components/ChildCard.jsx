@@ -2,7 +2,7 @@ import React from 'react';
 import Avatar from './Avatar';
 import styles from './ChildCard.module.css';
 
-const ChildCard = ({ child, onDelete, onEdit, onClick }) => {
+const ChildCard = ({ child, onDelete, onEdit, onRedeem, onClick }) => {
   const handleDelete = (e) => {
     e.stopPropagation();
     onDelete(child.id);
@@ -24,6 +24,11 @@ const ChildCard = ({ child, onDelete, onEdit, onClick }) => {
           <span className={styles.pointsLabel}>points</span>
         </div>
       </div>
+      {onRedeem && (
+        <button onClick={(e) => { e.stopPropagation(); onRedeem(child.id); }} className={styles.redeemBtn} aria-label="Redeem" title="Redeem">
+          🎁
+        </button>
+      )}
       <button onClick={handleEdit} className={styles.editBtn} aria-label="Edit" title="Edit">
         ✎
       </button>

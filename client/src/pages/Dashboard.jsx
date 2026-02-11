@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { childrenAPI } from '../api/children';
+import { rewardsAPI } from '../api/rewards';
 import { tasksAPI } from '../api/tasks';
 import Avatar from '../components/Avatar';
+import RedeemModal from '../components/RedeemModal';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [children, setChildren] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [rewards, setRewards] = useState([]);
   const [completedTasks, setCompletedTasks] = useState({});
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState('');
+  const [redeemChild, setRedeemChild] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
@@ -31,12 +35,14 @@ const Dashboard = () => {
 
   const loadData = useCallback(async () => {
     try {
-      const [childrenData, tasksData] = await Promise.all([
+      const [childrenData, tasksData, rewardsData] = await Promise.all([
         childrenAPI.getAll(),
-        tasksAPI.getAll()
+        tasksAPI.getAll(),
+        rewardsAPI.getAll()
       ]);
       setChildren(childrenData.children);
       setTasks(tasksData.tasks);
+      setRewards(rewardsData.rewards);
     } catch (_err) {
       setError('Failed to load data');
     } finally {
@@ -49,7 +55,8 @@ const Dashboard = () => {
       const data = await tasksAPI.getCompletionsForDate(selectedDate);
       const completionMap = {};
       data.completions.forEach(c => {
-        completionMap[`${c.task_id}-${c.child_id}`] = true;
+        const key = `${c.task_id}-${c.child_id}`;
+        completionMap[key] = (completionMap[key] || 0) + 1;
       });
       setCompletedTasks(completionMap);
     } catch (_err) {
@@ -99,12 +106,17 @@ const Dashboard = () => {
         await tasksAPI.uncompleteForDate(taskId, childId, selectedDate);
         setCompletedTasks(prev => {
           const next = { ...prev };
-          delete next[key];
+          const count = (next[key] || 1) - 1;
+          if (count <= 0) {
+            delete next[key];
+          } else {
+            next[key] = count;
+          }
           return next;
         });
       } else {
         await tasksAPI.completeForDate(taskId, childId, selectedDate);
-        setCompletedTasks(prev => ({ ...prev, [key]: true }));
+        setCompletedTasks(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
       }
       loadChildren();
     } catch (err) {
@@ -112,12 +124,44 @@ const Dashboard = () => {
     }
   };
 
+  const handleCompleteNonRecurring = async (taskId, childId) => {
+    const key = `${taskId}-${childId}`;
+
+    try {
+      await tasksAPI.completeForDate(taskId, childId, selectedDate);
+      setCompletedTasks(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+      loadChildren();
+    } catch (err) {
+      alert(err.message || 'Failed to complete task');
+    }
+  };
+
+  const handleUndoNonRecurring = async (taskId, childId) => {
+    const key = `${taskId}-${childId}`;
+
+    try {
+      await tasksAPI.uncompleteForDate(taskId, childId, selectedDate);
+      setCompletedTasks(prev => {
+        const next = { ...prev };
+        const count = (next[key] || 1) - 1;
+        if (count <= 0) {
+          delete next[key];
+        } else {
+          next[key] = count;
+        }
+        return next;
+      });
+      loadChildren();
+    } catch (err) {
+      alert(err.message || 'Failed to undo completion');
+    }
+  };
+
   const getDailyPointsForChild = (childId) => {
     let points = 0;
     getTasksForDate(selectedDate).forEach(task => {
-      if (completedTasks[`${task.id}-${childId}`]) {
-        points += task.point_value;
-      }
+      const count = completedTasks[`${task.id}-${childId}`] || 0;
+      points += task.point_value * count;
     });
     return points;
   };
@@ -189,7 +233,9 @@ const Dashboard = () => {
                     <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={28} />
                   </div>
                   <span style={{ color: child.avatar_color }}>{child.name}</span>
-                  <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} points</span>
+                  <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} pts today</span>
+                  <span className={styles.totalPoints}>{child.current_points} pts total</span>
+                  <button className={styles.redeemBtn} onClick={() => setRedeemChild(child)}>Redeem</button>
                 </div>
               ))}
             </div>
@@ -201,17 +247,52 @@ const Dashboard = () => {
                 </div>
                 {children.map(child => (
                   <div key={child.id} className={styles.taskCheckbox}>
-                    <input
-                      type="checkbox"
-                      checked={!!completedTasks[`${task.id}-${child.id}`]}
-                      onChange={() => handleToggleComplete(task.id, child.id)}
-                    />
+                    {task.repeat_schedule === 'none' ? (
+                      <div className={styles.completeCell}>
+                        <div className={styles.completeBtnRow}>
+                          <button
+                            className={styles.completeBtn}
+                            onClick={() => handleCompleteNonRecurring(task.id, child.id)}
+                          >
+                            +{task.point_value}
+                          </button>
+                          {completedTasks[`${task.id}-${child.id}`] > 0 && (
+                            <button
+                              className={styles.undoBtn}
+                              onClick={() => handleUndoNonRecurring(task.id, child.id)}
+                            >
+                              −{task.point_value}
+                            </button>
+                          )}
+                        </div>
+                        {completedTasks[`${task.id}-${child.id}`] > 0 && (
+                          <span className={styles.completionCount}>
+                            x{completedTasks[`${task.id}-${child.id}`]}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <input
+                        type="checkbox"
+                        checked={!!completedTasks[`${task.id}-${child.id}`]}
+                        onChange={() => handleToggleComplete(task.id, child.id)}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
             ))}
           </div>
         </div>
+      )}
+
+      {redeemChild && (
+        <RedeemModal
+          child={redeemChild}
+          rewards={rewards}
+          onClose={() => setRedeemChild(null)}
+          onRedeemed={() => { setRedeemChild(null); loadData(); }}
+        />
       )}
     </div>
   );

@@ -64,11 +64,12 @@ test.describe('Dashboard', () => {
     await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
 
-    // Add task
+    // Add a daily recurring task (shows as checkbox on dashboard)
     await page.getByRole('link', { name: /Tasks/i }).click();
     await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
     await page.getByLabel(/Point Value/i).fill(taskPointValue.toString());
+    await page.getByLabel(/Repeat Schedule/i).selectOption('daily');
     await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard
@@ -81,7 +82,7 @@ test.describe('Dashboard', () => {
 
     // Wait for API update and points to reflect
     await expect(checkbox).toBeChecked();
-    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*points?`, 'i')).first()).toBeVisible();
+    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*pts`, 'i')).first()).toBeVisible();
   });
 
   test('should decrease points when unchecking task', async ({ page }) => {
@@ -94,11 +95,12 @@ test.describe('Dashboard', () => {
     await page.getByRole('link', { name: /Kids/i }).click();
     await addKid(page, testKids[0]);
 
-    // Add task
+    // Add a daily recurring task (shows as checkbox on dashboard)
     await page.getByRole('link', { name: /Tasks/i }).click();
     await page.getByRole('button', { name: /\+ Add Task/i }).click();
     await page.getByLabel(/Task name|Name/i).fill('Make Bed');
     await page.getByLabel(/Point Value/i).fill(taskPointValue.toString());
+    await page.getByLabel(/Repeat Schedule/i).selectOption('daily');
     await page.getByRole('button', { name: 'Add Task', exact: true }).click();
 
     // Go to dashboard
@@ -111,14 +113,14 @@ test.describe('Dashboard', () => {
 
     // Wait for check to complete
     await expect(checkbox).toBeChecked();
-    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*points?`, 'i')).first()).toBeVisible();
+    await expect(page.getByText(new RegExp(`${taskPointValue}\\s*pts`, 'i')).first()).toBeVisible();
 
     // Uncheck task
     await checkbox.click();
 
     // Wait for uncheck to complete
     await expect(checkbox).not.toBeChecked();
-    await expect(page.getByText(/\b0\s*points?/i).first()).toBeVisible();
+    await expect(page.getByText(/\b0\s*pts/i).first()).toBeVisible();
   });
 
   test('should filter tasks by date (today)', async ({ page }) => {

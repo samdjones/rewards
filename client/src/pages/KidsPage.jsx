@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { childrenAPI } from '../api/children';
+import { rewardsAPI } from '../api/rewards';
 import { uploadsAPI } from '../api/uploads';
 import ChildCard from '../components/ChildCard';
+import RedeemModal from '../components/RedeemModal';
 import ImageUpload from '../components/ImageUpload';
 import Modal from '../components/Modal';
 import styles from './KidsPage.module.css';
 
 const KidsPage = () => {
   const [children, setChildren] = useState([]);
+  const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [redeemChild, setRedeemChild] = useState(null);
   const [editingChildId, setEditingChildId] = useState(null);
   const [formData, setFormData] = useState({ name: '', age: '', avatar_color: '#3B82F6' });
   const [editFormData, setEditFormData] = useState({ name: '', age: '', avatar_color: '#3B82F6' });
@@ -26,8 +30,12 @@ const KidsPage = () => {
 
   const loadChildren = async () => {
     try {
-      const data = await childrenAPI.getAll();
-      setChildren(data.children);
+      const [childrenData, rewardsData] = await Promise.all([
+        childrenAPI.getAll(),
+        rewardsAPI.getAll()
+      ]);
+      setChildren(childrenData.children);
+      setRewards(rewardsData.rewards);
     } catch (_err) {
       setError('Failed to load kids');
     } finally {
@@ -150,6 +158,7 @@ const KidsPage = () => {
               child={child}
               onDelete={handleDelete}
               onEdit={openEditModal}
+              onRedeem={(id) => setRedeemChild(children.find(c => c.id === id))}
               onClick={() => navigate(`/children/${child.id}`)}
             />
           ))}
@@ -196,6 +205,15 @@ const KidsPage = () => {
             <button type="submit" className={styles.submitBtn}>Add Kid</button>
           </form>
         </Modal>
+      )}
+
+      {redeemChild && (
+        <RedeemModal
+          child={redeemChild}
+          rewards={rewards}
+          onClose={() => setRedeemChild(null)}
+          onRedeemed={() => { setRedeemChild(null); loadChildren(); }}
+        />
       )}
 
       {showEditModal && (
