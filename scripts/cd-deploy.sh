@@ -4,6 +4,7 @@ set -euo pipefail
 # CD deploy script — invoked by GitHub Actions deploy job on lister.
 # Builds the container image, restarts the systemd service, and verifies health.
 # On failure, rolls back to the previous image.
+# Supports --bump <major|minor|patch> for automatic version bumping in CI.
 
 CONTAINER_NAME="rewards-app"
 IMAGE_NAME="rewards-app"
