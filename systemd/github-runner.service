@@ -1,0 +1,13 @@
+[Unit]
+Description=GitHub Actions Runner
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/actions-runner
+ExecStart=%h/actions-runner/run.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

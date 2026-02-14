@@ -154,3 +154,20 @@ jobs:
           name: playwright-results
           path: client/test-results/
           retention-days: 7
+
+  deploy:
+    name: Deploy to Production
+    runs-on: [self-hosted, lister]
+    needs: [functional-tests, ui-tests]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Deploy
+        run: ./scripts/cd-deploy.sh
+
+      - name: Print deployment info
+        if: success()
+        run: |
+          echo "Deployed $(node -p "require('./package.json').version") to production"
+          echo "  Commit: ${{ github.sha }}"
