@@ -17,6 +17,37 @@ export NVM_DIR="${HOME}/.nvm"
 # shellcheck source=/dev/null
 [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh"
 
+# Parse arguments
+BUMP_TYPE=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --bump)
+      BUMP_TYPE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown argument: $1"
+      exit 1
+      ;;
+  esac
+done
+
+# Version bump (when invoked from CI with --bump)
+if [ -n "$BUMP_TYPE" ]; then
+  echo "=== Bumping version (${BUMP_TYPE}) ==="
+  npm version "$BUMP_TYPE" --no-git-tag-version
+  APP_VERSION=$(node -p "require('./package.json').version")
+
+  git config user.name "github-actions[bot]"
+  git config user.email "github-actions[bot]@users.noreply.github.com"
+  git add package.json package-lock.json
+  git commit -m "v${APP_VERSION} [skip ci]"
+  git tag -a "v${APP_VERSION}" -m "v${APP_VERSION}"
+  git push origin HEAD:master --follow-tags
+
+  echo "Bumped to v${APP_VERSION} and pushed tag"
+fi
+
 # Read version from package.json
 APP_VERSION=$(node -p "require('./package.json').version")
 echo "=== CD Deploy: rewards-app v${APP_VERSION} ==="
