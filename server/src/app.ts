@@ -87,7 +87,7 @@ export const createApp = (): Express => {
   app.use(express.static(publicPath));
 
   // SPA fallback - serve index.html for non-API routes
-  app.get('*', (req: Request, res: Response) => {
+  app.get('/{*splat}', (req: Request, res: Response) => {
     res.sendFile(path.join(publicPath, 'index.html'));
   });
 

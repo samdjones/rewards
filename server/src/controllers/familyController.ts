@@ -287,7 +287,7 @@ export const updateMemberRole = (req: Request, res: Response): void => {
     req.familyId
   );
 
-  res.json({ message: 'Member role updated', userId: parseInt(userId), role });
+  res.json({ message: 'Member role updated', userId: parseInt(userId as string), role });
 };
 
 // Remove member from family (admin only)
