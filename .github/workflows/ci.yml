@@ -192,6 +192,6 @@ jobs:
       - name: Print deployment info
         if: success()
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(grep -o '"version": "[^"]*"' package.json | head -1 | cut -d'"' -f4)
           echo "Deployed v${VERSION} to production"
           echo "  Commit: ${{ github.sha }}"
