@@ -162,12 +162,34 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine version bump type
+        id: bump
+        run: |
+          PR_NUMBER=$(gh pr list --state merged --search "${{ github.sha }}" --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [ -n "$PR_NUMBER" ]; then
+            LABELS=$(gh pr view "$PR_NUMBER" --json labels --jq '[.labels[].name] | join(" ")')
+            if echo "$LABELS" | grep -qw "major"; then
+              echo "type=major" >> "$GITHUB_OUTPUT"
+            elif echo "$LABELS" | grep -qw "minor"; then
+              echo "type=minor" >> "$GITHUB_OUTPUT"
+            else
+              echo "type=patch" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Deploy
-        run: ./scripts/cd-deploy.sh
+        run: ./scripts/cd-deploy.sh --bump ${{ steps.bump.outputs.type }}
 
       - name: Print deployment info
         if: success()
         run: |
-          echo "Deployed $(node -p "require('./package.json').version") to production"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Deployed v${VERSION} to production"
           echo "  Commit: ${{ github.sha }}"
