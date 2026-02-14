@@ -1,0 +1,22 @@
+[Unit]
+Description=Kids Reward Tracker
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+EnvironmentFile=%h/.config/rewards-app/env
+ExecStartPre=-/usr/bin/podman rm -f rewards-app
+ExecStart=/usr/bin/podman run --name rewards-app \
+  -p 3000:3000 \
+  -v rewards-data:/data \
+  -e JWT_SECRET=${JWT_SECRET} \
+  -e NODE_ENV=production \
+  -e DATABASE_PATH=/data/database.db \
+  rewards-app:latest
+ExecStop=/usr/bin/podman stop rewards-app
+ExecStopPost=-/usr/bin/podman rm -f rewards-app
+
+[Install]
+WantedBy=default.target
