@@ -133,8 +133,8 @@ export const getDashboardData = (req: Request, res: Response): void => {
     const familyId = req.familyId;
     const today = new Date().toISOString().split('T')[0];
 
-    const family = db.prepare<{ name: string; profile_image: string | null }>(
-      'SELECT name, profile_image FROM families WHERE id = ?'
+    const family = db.prepare<{ name: string; profile_image: string | null; holiday_mode: number }>(
+      'SELECT name, profile_image, holiday_mode FROM families WHERE id = ?'
     ).get(familyId);
 
     const children = db.prepare<Record<string, unknown>>(
@@ -156,7 +156,15 @@ export const getDashboardData = (req: Request, res: Response): void => {
       'SELECT * FROM rewards WHERE family_id = ? ORDER BY name'
     ).all(familyId);
 
-    res.json({ family, children, tasks, completions, rewards });
+    const deductions = db.prepare<Record<string, unknown>>(
+      `SELECT pa.id, pa.child_id, pa.amount, pa.reason, pa.adjusted_at, c.name as child_name
+       FROM point_adjustments pa
+       JOIN children c ON pa.child_id = c.id
+       WHERE c.family_id = ? AND pa.amount < 0 AND date(pa.adjusted_at) = date(?)
+       ORDER BY pa.adjusted_at DESC`
+    ).all(familyId, today);
+
+    res.json({ family, children, tasks, completions, rewards, deductions });
   } catch (error) {
     console.error('Get kiosk dashboard data error:', error);
     res.status(500).json({ error: 'Server error' });

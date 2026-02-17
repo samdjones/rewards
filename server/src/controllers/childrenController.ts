@@ -6,7 +6,7 @@ export const getChildren = (req: Request, res: Response): void => {
   try {
     const children = db
       .prepare<Child>(
-        'SELECT * FROM children WHERE family_id = ? ORDER BY created_at DESC'
+        'SELECT * FROM children WHERE family_id = ? ORDER BY name ASC'
       )
       .all(req.familyId);
     res.json({ children });

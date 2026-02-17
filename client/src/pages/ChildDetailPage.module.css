@@ -4,8 +4,8 @@
 
 .backBtn {
   background: none;
-  border: 1px solid #d1d5db;
-  color: #6b7280;
+  border: 1px solid #334155;
+  color: #94a3b8;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   margin-bottom: 1.5rem;
@@ -13,17 +13,18 @@
 }
 
 .backBtn:hover {
-  background-color: #f3f4f6;
+  background-color: #1e293b;
+  color: #f1f5f9;
 }
 
 .header {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  background: white;
+  background: #1e293b;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #334155;
   margin-bottom: 2rem;
 }
 
@@ -33,12 +34,12 @@
 
 .headerInfo h2 {
   font-size: 2rem;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 0.25rem;
 }
 
 .age {
-  color: #6b7280;
+  color: #64748b;
   font-size: 1rem;
   margin-bottom: 0.75rem;
 }
@@ -52,12 +53,34 @@
 .pointsValue {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #3B82F6;
+  color: #6366f1;
 }
 
 .pointsLabel {
-  color: #6b7280;
+  color: #64748b;
   font-size: 1rem;
+}
+
+.pointActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.deductBtn {
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deductBtn:hover {
+  background-color: #d97706;
 }
 
 .resetBtn {
@@ -70,7 +93,6 @@
   font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.2s;
-  margin-top: 0.75rem;
 }
 
 .resetBtn:hover:not(:disabled) {
@@ -78,7 +100,8 @@
 }
 
 .resetBtn:disabled {
-  background-color: #d1d5db;
+  background-color: #334155;
+  color: #64748b;
   cursor: not-allowed;
 }
 
@@ -90,36 +113,36 @@
 }
 
 .statCard {
-  background: white;
+  background: #1e293b;
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #334155;
   text-align: center;
 }
 
 .statValue {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 0.5rem;
 }
 
 .statLabel {
-  color: #6b7280;
+  color: #64748b;
   font-size: 0.9rem;
 }
 
 .badgesSection {
-  background: white;
+  background: #1e293b;
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #334155;
   margin-bottom: 2rem;
 }
 
 .badgesSection h3 {
   font-size: 1.25rem;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 1rem;
 }
 
@@ -130,7 +153,7 @@
 }
 
 .badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -146,29 +169,29 @@
 }
 
 .chartSection {
-  background: white;
+  background: #1e293b;
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #334155;
   margin-bottom: 2rem;
 }
 
 .chartSection h3 {
   font-size: 1.25rem;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 1rem;
 }
 
 .activitySection {
-  background: white;
+  background: #1e293b;
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #334155;
 }
 
 .activitySection h3 {
   font-size: 1.25rem;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 1rem;
 }
 
@@ -182,7 +205,7 @@
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: #263448;
   border-radius: 8px;
 }
 
@@ -204,25 +227,25 @@
 
 .activityTitle {
   font-weight: 600;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 0.25rem;
 }
 
 .activityMeta {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .activityNotes {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: #94a3b8;
   margin-top: 0.5rem;
   font-style: italic;
 }
 
 .noActivity {
   text-align: center;
-  color: #6b7280;
+  color: #64748b;
   padding: 2rem;
 }
 
@@ -230,14 +253,14 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .error {
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-  color: #ef4444;
+  color: #f87171;
 }
 
 @media (max-width: 768px) {

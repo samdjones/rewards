@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { Task, Child, RepeatSchedule } from '@rewards/shared';
 import db from '../db/wrapper.js';
 
-const VALID_SCHEDULES: RepeatSchedule[] = ['none', 'daily', 'weekdays', 'weekends'];
+const VALID_SCHEDULES: RepeatSchedule[] = ['none', 'daily', 'weekdays', 'weekends', 'holidays'];
 
 export const getTasks = (req: Request, res: Response): void => {
   try {

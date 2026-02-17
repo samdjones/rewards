@@ -5,6 +5,7 @@ export interface Family {
   name: string;
   invite_code: string;
   profile_image: string | null;
+  holiday_mode: number;
   created_at: string;
 }
 

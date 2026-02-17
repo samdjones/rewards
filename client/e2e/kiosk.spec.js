@@ -21,7 +21,7 @@ test.describe('Kiosk Display', () => {
     await page.goto('/kiosk');
 
     // Layout header/nav/footer should not be visible
-    await expect(page.getByText('Kids Reward Tracker')).not.toBeVisible();
+    await expect(page.getByText('Rewards')).not.toBeVisible();
     await expect(page.getByRole('link', { name: /Dashboard/i })).not.toBeVisible();
   });
 

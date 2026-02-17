@@ -193,7 +193,7 @@ const TasksPage = () => {
 
   const calculateDailyPoints = () => {
     const days = {
-      Sat: 0, Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0
+      Sat: 0, Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Hol: 0
     };
 
     tasks.forEach(task => {
@@ -204,6 +204,8 @@ const TasksPage = () => {
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].forEach(day => days[day] += pts);
       } else if (task.repeat_schedule === 'weekends') {
         ['Sat', 'Sun'].forEach(day => days[day] += pts);
+      } else if (task.repeat_schedule === 'holidays') {
+        days['Hol'] += pts;
       }
     });
 
@@ -268,6 +270,7 @@ const TasksPage = () => {
                       {task.repeat_schedule === 'daily' && 'Daily'}
                       {task.repeat_schedule === 'weekdays' && 'Weekdays'}
                       {task.repeat_schedule === 'weekends' && 'Weekends'}
+                      {task.repeat_schedule === 'holidays' && 'Holidays'}
                     </span>
                   )}
                 </div>
@@ -347,6 +350,7 @@ const TasksPage = () => {
                 <option value="daily">Every day (Mon-Sun)</option>
                 <option value="weekdays">Weekdays only (Mon-Fri)</option>
                 <option value="weekends">Weekends only (Sat-Sun)</option>
+                <option value="holidays">Holidays only</option>
               </select>
             </div>
 
@@ -452,6 +456,7 @@ const TasksPage = () => {
                 <option value="daily">Every day (Mon-Sun)</option>
                 <option value="weekdays">Weekdays only (Mon-Fri)</option>
                 <option value="weekends">Weekends only (Sat-Sun)</option>
+                <option value="holidays">Holidays only</option>
               </select>
             </div>
 

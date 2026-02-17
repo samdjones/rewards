@@ -10,7 +10,7 @@
   height: 96px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px dashed #d1d5db;
+  border: 2px dashed #334155;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,7 +23,7 @@
 }
 
 .placeholder {
-  color: #9ca3af;
+  color: #475569;
   font-size: 0.8rem;
   text-align: center;
 }
@@ -40,9 +40,9 @@
 
 .uploadBtn {
   padding: 0.375rem 0.75rem;
-  border: 1px solid #3b82f6;
-  background: white;
-  color: #3b82f6;
+  border: 1px solid #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
   border-radius: 6px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -50,7 +50,7 @@
 }
 
 .uploadBtn:hover:not(:disabled) {
-  background: #eff6ff;
+  background: rgba(99, 102, 241, 0.2);
 }
 
 .uploadBtn:disabled {
@@ -60,9 +60,9 @@
 
 .removeBtn {
   padding: 0.375rem 0.75rem;
-  border: 1px solid #d1d5db;
-  background: white;
-  color: #6b7280;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #64748b;
   border-radius: 6px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -70,7 +70,8 @@
 }
 
 .removeBtn:hover:not(:disabled) {
-  background: #f3f4f6;
+  background: #263448;
+  color: #94a3b8;
 }
 
 .removeBtn:disabled {
@@ -79,7 +80,7 @@
 }
 
 .error {
-  color: #dc2626;
+  color: #f87171;
   font-size: 0.8rem;
   text-align: center;
 }

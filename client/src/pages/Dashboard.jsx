@@ -3,12 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import { childrenAPI } from '../api/children';
 import { rewardsAPI } from '../api/rewards';
 import { tasksAPI } from '../api/tasks';
+import { familiesAPI } from '../api/families';
 import Avatar from '../components/Avatar';
 import RedeemModal from '../components/RedeemModal';
+import DeductModal from '../components/DeductModal';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, isAdmin, refreshUser } = useAuth();
   const [children, setChildren] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [rewards, setRewards] = useState([]);
@@ -16,6 +18,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState('');
   const [redeemChild, setRedeemChild] = useState(null);
+  const [deductChild, setDeductChild] = useState(null);
+  const [holidayMode, setHolidayMode] = useState(user?.family?.holiday_mode || 0);
   const [selectedDate, setSelectedDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
@@ -83,6 +87,16 @@ const Dashboard = () => {
     }
   };
 
+  const handleToggleHolidayMode = async () => {
+    try {
+      const result = await familiesAPI.toggleHolidayMode();
+      setHolidayMode(result.holiday_mode);
+      refreshUser();
+    } catch (_err) {
+      alert('Failed to toggle holiday mode');
+    }
+  };
+
   const getTasksForDate = (date) => {
     const d = new Date(date + 'T12:00:00');
     const dayOfWeek = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
@@ -90,6 +104,15 @@ const Dashboard = () => {
     const isCurrentDay = date === getToday();
 
     return tasks.filter(task => {
+      if (holidayMode) {
+        if (task.repeat_schedule === 'daily') return true;
+        if (task.repeat_schedule === 'holidays') return true;
+        if (task.repeat_schedule === 'weekdays') return false;
+        if (task.repeat_schedule === 'weekends') return false;
+        if (task.repeat_schedule === 'none' && isCurrentDay) return true;
+        return false;
+      }
+      if (task.repeat_schedule === 'holidays') return false;
       if (task.repeat_schedule === 'daily') return true;
       if (task.repeat_schedule === 'weekdays' && !isWeekend) return true;
       if (task.repeat_schedule === 'weekends' && isWeekend) return true;
@@ -194,6 +217,24 @@ const Dashboard = () => {
         <h2>Dashboard</h2>
       </div>
 
+      {isAdmin && (
+        <div className={styles.holidayToggle}>
+          <label className={styles.toggleLabel}>
+            <span className={styles.toggleText}>Holiday Mode</span>
+            <div
+              className={`${styles.toggleSwitch} ${holidayMode ? styles.toggleActive : ''}`}
+              onClick={handleToggleHolidayMode}
+              role="switch"
+              aria-checked={!!holidayMode}
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleHolidayMode(); } }}
+            >
+              <div className={styles.toggleKnob} />
+            </div>
+          </label>
+        </div>
+      )}
+
       <div className={styles.dateSelector}>
         <button
           className={`${styles.dateBtn} ${isYesterday ? styles.activeDateBtn : ''}`}
@@ -235,7 +276,10 @@ const Dashboard = () => {
                   <span style={{ color: child.avatar_color }}>{child.name}</span>
                   <span className={styles.dailyPoints}>{getDailyPointsForChild(child.id)} pts today</span>
                   <span className={styles.totalPoints}>{child.current_points} pts total</span>
-                  <button className={styles.redeemBtn} onClick={() => setRedeemChild(child)}>Redeem</button>
+                  <div className={styles.childActions}>
+                    <button className={styles.redeemBtn} onClick={() => setRedeemChild(child)}>Redeem</button>
+                    <button className={styles.deductBtn} onClick={() => setDeductChild(child)}>Deduct</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -292,6 +336,14 @@ const Dashboard = () => {
           rewards={rewards}
           onClose={() => setRedeemChild(null)}
           onRedeemed={() => { setRedeemChild(null); loadData(); }}
+        />
+      )}
+
+      {deductChild && (
+        <DeductModal
+          child={deductChild}
+          onClose={() => setDeductChild(null)}
+          onDeducted={() => { setDeductChild(null); loadData(); }}
         />
       )}
     </div>

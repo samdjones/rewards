@@ -11,11 +11,11 @@
 
 .header h2 {
   font-size: 1.875rem;
-  color: #1f2937;
+  color: #f1f5f9;
 }
 
 .addBtn {
-  background-color: #3B82F6;
+  background-color: #6366f1;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -25,20 +25,20 @@
 }
 
 .addBtn:hover {
-  background-color: #2563eb;
+  background-color: #4f46e5;
 }
 
 .pointsSummary {
-  background: white;
+  background: #1e293b;
+  border: 1px solid #334155;
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .pointsSummary h3 {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #64748b;
   margin-bottom: 0.75rem;
   font-weight: 500;
 }
@@ -58,14 +58,14 @@
 
 .dayName {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #64748b;
   font-weight: 500;
 }
 
 .dayPoints {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e40af;
+  color: #818cf8;
 }
 
 .tasksList {
@@ -75,17 +75,16 @@
 }
 
 .taskCard {
-  background: white;
+  background: #1e293b;
   border-radius: 8px;
   padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 2px solid transparent;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
   cursor: grab;
-  transition: box-shadow 0.2s, opacity 0.2s, border-color 0.2s;
-  border: 2px solid transparent;
+  transition: border-color 0.2s, opacity 0.2s, background-color 0.2s;
 }
 
 .taskCard:active {
@@ -94,19 +93,19 @@
 
 .taskCard.dragging {
   opacity: 0.5;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: #263448;
 }
 
 .taskCard.dragOver {
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: #6366f1;
+  background: #1e2d45;
 }
 
 .dragHandle {
   display: flex;
   align-items: center;
   padding: 0.25rem;
-  color: #9ca3af;
+  color: #475569;
   cursor: grab;
 }
 
@@ -126,12 +125,12 @@
 
 .taskName {
   font-size: 1.125rem;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 0.5rem;
 }
 
 .taskDesc {
-  color: #6b7280;
+  color: #94a3b8;
   font-size: 0.9rem;
   margin-bottom: 0.75rem;
 }
@@ -143,8 +142,8 @@
 }
 
 .points {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.875rem;
@@ -152,16 +151,16 @@
 }
 
 .category {
-  background-color: #f3f4f6;
-  color: #4b5563;
+  background-color: #263448;
+  color: #94a3b8;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.875rem;
 }
 
 .recurring {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.875rem;
@@ -187,7 +186,7 @@
 }
 
 .editBtn {
-  background-color: #6b7280;
+  background-color: #475569;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -197,7 +196,7 @@
 }
 
 .editBtn:hover {
-  background-color: #4b5563;
+  background-color: #334155;
 }
 
 .deleteBtn {
@@ -217,7 +216,7 @@
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #6b7280;
+  color: #64748b;
   font-size: 1.1rem;
 }
 
@@ -225,13 +224,13 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .error {
-  background-color: #fee;
-  border: 1px solid #fcc;
-  color: #c00;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
   padding: 0.75rem;
   border-radius: 4px;
   margin-bottom: 1rem;
@@ -252,21 +251,23 @@
 
 .formGroup label {
   font-weight: 500;
-  color: #374151;
+  color: #94a3b8;
   font-size: 0.9rem;
 }
 
 .formGroup input, .formGroup select, .formGroup textarea {
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  background: #0f172a;
+  border: 1px solid #334155;
   border-radius: 6px;
   font-size: 1rem;
+  color: #f1f5f9;
 }
 
 .formGroup input:focus, .formGroup select:focus, .formGroup textarea:focus {
   outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .checkboxGroup {
@@ -279,17 +280,18 @@
   width: 18px;
   height: 18px;
   cursor: pointer;
+  accent-color: #6366f1;
 }
 
 .checkboxGroup label {
   font-size: 0.9rem;
-  color: #374151;
+  color: #94a3b8;
   cursor: pointer;
 }
 
 .pointsInfo {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
   padding: 0.75rem;
   border-radius: 6px;
   text-align: center;
@@ -297,7 +299,7 @@
 }
 
 .submitBtn {
-  background-color: #3B82F6;
+  background-color: #6366f1;
   color: white;
   border: none;
   padding: 0.875rem;
@@ -309,7 +311,7 @@
 }
 
 .submitBtn:hover {
-  background-color: #2563eb;
+  background-color: #4f46e5;
 }
 
 @media (max-width: 768px) {

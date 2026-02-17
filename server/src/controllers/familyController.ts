@@ -357,6 +357,26 @@ export const regenerateInviteCode = (req: Request, res: Response): void => {
   res.json({ invite_code: inviteCode });
 };
 
+// Toggle holiday mode (admin only)
+export const toggleHolidayMode = (req: Request, res: Response): void => {
+  try {
+    const family = db.prepare<Family>('SELECT * FROM families WHERE id = ?').get(req.familyId);
+
+    if (!family) {
+      res.status(404).json({ error: 'Family not found' });
+      return;
+    }
+
+    const newMode = family.holiday_mode ? 0 : 1;
+    db.prepare('UPDATE families SET holiday_mode = ? WHERE id = ?').run(newMode, req.familyId);
+
+    res.json({ holiday_mode: newMode });
+  } catch (error) {
+    console.error('Toggle holiday mode error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 // Reset all history (admin only) - clears completions, redemptions, adjustments, and resets points
 export const resetFamilyHistory = (req: Request, res: Response): void => {
   try {

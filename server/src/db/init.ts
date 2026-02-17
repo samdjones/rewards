@@ -280,6 +280,22 @@ const runMigrations = (): void => {
     saveDatabase();
   }
 
+  // Migration: Add holiday_mode column to families
+  const familiesInfoForHoliday = db.exec('PRAGMA table_info(families)');
+  const familiesColsForHoliday =
+    familiesInfoForHoliday.length > 0
+      ? familiesInfoForHoliday[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!familiesColsForHoliday.includes('holiday_mode')) {
+    console.log('Running migration: Adding holiday_mode to families...');
+
+    db.run('ALTER TABLE families ADD COLUMN holiday_mode INTEGER DEFAULT 0');
+
+    console.log('Migration completed: holiday_mode added');
+    saveDatabase();
+  }
+
   if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
     console.log('Running migration: Clearing old filename-based profile images...');
 

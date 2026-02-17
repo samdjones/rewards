@@ -11,11 +11,11 @@
 
 .header h2 {
   font-size: 1.875rem;
-  color: #1f2937;
+  color: #f1f5f9;
 }
 
 .addBtn {
-  background-color: #3B82F6;
+  background-color: #6366f1;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -25,7 +25,7 @@
 }
 
 .addBtn:hover {
-  background-color: #2563eb;
+  background-color: #4f46e5;
 }
 
 .kidsGrid {
@@ -37,7 +37,7 @@
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #6b7280;
+  color: #64748b;
   font-size: 1.1rem;
 }
 
@@ -45,13 +45,13 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .error {
-  background-color: #fee;
-  border: 1px solid #fcc;
-  color: #c00;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
   padding: 0.75rem;
   border-radius: 4px;
   margin-bottom: 1rem;
@@ -72,25 +72,27 @@
 
 .formGroup label {
   font-weight: 500;
-  color: #374151;
+  color: #94a3b8;
   font-size: 0.9rem;
 }
 
 .formGroup input, .formGroup select {
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  background: #0f172a;
+  border: 1px solid #334155;
   border-radius: 6px;
   font-size: 1rem;
+  color: #f1f5f9;
 }
 
 .formGroup input:focus, .formGroup select:focus {
   outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .submitBtn {
-  background-color: #3B82F6;
+  background-color: #6366f1;
   color: white;
   border: none;
   padding: 0.875rem;
@@ -102,7 +104,7 @@
 }
 
 .submitBtn:hover {
-  background-color: #2563eb;
+  background-color: #4f46e5;
 }
 
 @media (max-width: 768px) {

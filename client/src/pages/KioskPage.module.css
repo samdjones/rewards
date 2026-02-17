@@ -197,3 +197,45 @@
   color: #475569;
   font-size: 1.5rem;
 }
+
+/* Deductions rows */
+.deductionsSeparator {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 0 0.2rem;
+  margin-top: 0.25rem;
+  border-top: 2px solid #334155;
+}
+
+.deductionsSeparatorLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.deductionRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(var(--child-count, 2), 1fr);
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #1e293b;
+  align-items: center;
+}
+
+.deductionReason {
+  font-size: 1rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.deductionBadge {
+  background: #450a0a;
+  color: #f87171;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

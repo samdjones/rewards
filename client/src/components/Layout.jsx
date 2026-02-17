@@ -67,7 +67,7 @@ const Layout = ({ children }) => {
     <div className={styles.layout}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1 className={styles.logo}>Kids Reward Tracker</h1>
+          <h1 className={styles.logo}>Rewards</h1>
           {user && (
             <div className={styles.userInfo}>
               <div className={styles.profileButton} ref={dropdownRef}>
