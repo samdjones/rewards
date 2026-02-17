@@ -32,7 +32,7 @@ const LoginPage = () => {
   return (
     <div className={styles.authPage}>
       <div className={styles.authCard}>
-        <h1 className={styles.title}>Kids Reward Tracker</h1>
+        <h1 className={styles.title}>Rewards</h1>
         <h2 className={styles.subtitle}>Login</h2>
 
         {error && <div className={styles.error}>{error}</div>}

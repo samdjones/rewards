@@ -149,6 +149,19 @@ export const familiesAPI = {
     return res.json();
   },
 
+  // Toggle holiday mode (admin only)
+  toggleHolidayMode: async () => {
+    const res = await fetch(`${API_URL}/families/current/holiday-mode`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to toggle holiday mode');
+    }
+    return res.json();
+  },
+
   // Reset all history (admin only)
   resetHistory: async () => {
     const res = await fetch(`${API_URL}/families/current/reset-history`, {

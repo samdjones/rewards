@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS families (
   name TEXT NOT NULL,
   invite_code TEXT UNIQUE NOT NULL,
   profile_image TEXT,
+  holiday_mode INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

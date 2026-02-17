@@ -18,6 +18,7 @@ const FamilySettingsPage = () => {
   const fileInputRef = useRef(null);
   const [kioskCode, setKioskCode] = useState('');
   const [kioskSessions, setKioskSessions] = useState([]);
+  const [holidayMode, setHolidayMode] = useState(user?.family?.holiday_mode || 0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -89,6 +90,19 @@ const FamilySettingsPage = () => {
       setError(err.message);
     } finally {
       setImageUploading(false);
+    }
+  };
+
+  const handleToggleHolidayMode = async () => {
+    try {
+      setActionLoading(true);
+      const result = await familiesAPI.toggleHolidayMode();
+      setHolidayMode(result.holiday_mode);
+      await refreshUser();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -255,6 +269,33 @@ const FamilySettingsPage = () => {
       </div>
 
       {error && <div className={styles.error}>{error}</div>}
+
+      {/* Holiday Mode Section (Admin Only) */}
+      {isAdmin && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Holiday Mode</h2>
+          <p className={styles.sectionDescription}>
+            When enabled, holiday tasks replace weekday and weekend tasks.
+          </p>
+          <div className={styles.holidayToggleBox}>
+            <label className={styles.toggleLabel}>
+              <span className={styles.toggleStatus}>
+                {holidayMode ? 'On' : 'Off'}
+              </span>
+              <div
+                className={`${styles.toggleSwitch} ${holidayMode ? styles.toggleActive : ''}`}
+                onClick={handleToggleHolidayMode}
+                role="switch"
+                aria-checked={!!holidayMode}
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleHolidayMode(); } }}
+              >
+                <div className={styles.toggleKnob} />
+              </div>
+            </label>
+          </div>
+        </section>
+      )}
 
       {/* Invite Code Section (Admin Only) */}
       {isAdmin && (

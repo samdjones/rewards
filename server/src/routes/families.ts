@@ -12,6 +12,7 @@ import {
   removeMember,
   getInviteCode,
   regenerateInviteCode,
+  toggleHolidayMode,
   resetFamilyHistory,
 } from '../controllers/familyController.js';
 
@@ -35,6 +36,9 @@ router.delete('/current/members/:userId', requireFamilyAdmin, removeMember);
 // Invite code management
 router.get('/current/invite-code', requireFamilyAdmin, getInviteCode);
 router.post('/current/invite-code/regenerate', requireFamilyAdmin, regenerateInviteCode);
+
+// Holiday mode
+router.post('/current/holiday-mode', requireFamilyAdmin, toggleHolidayMode);
 
 // Reset history
 router.post('/current/reset-history', requireFamilyAdmin, resetFamilyHistory);

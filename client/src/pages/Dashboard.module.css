@@ -11,7 +11,80 @@
 
 .header h2 {
   font-size: 1.875rem;
-  color: #1f2937;
+  color: #f1f5f9;
+}
+
+.holidayToggle {
+  margin-bottom: 1rem;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.toggleText {
+  font-weight: 500;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.toggleSwitch {
+  width: 44px;
+  height: 24px;
+  background: #334155;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.toggleSwitch:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.toggleActive {
+  background: #10b981;
+}
+
+.toggleKnob {
+  width: 20px;
+  height: 20px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.toggleActive .toggleKnob {
+  transform: translateX(20px);
+}
+
+.childActions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.deductBtn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deductBtn:hover {
+  background-color: #dc2626;
 }
 
 .dateSelector {
@@ -22,8 +95,9 @@
 
 .dateBtn {
   padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #94a3b8;
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
@@ -31,36 +105,37 @@
 }
 
 .dateBtn:hover {
-  background: #f3f4f6;
+  background: #263448;
+  color: #f1f5f9;
 }
 
 .activeDateBtn {
-  background: #3B82F6;
+  background: #6366f1;
   color: white;
-  border-color: #3B82F6;
+  border-color: #6366f1;
 }
 
 .activeDateBtn:hover {
-  background: #2563eb;
+  background: #4f46e5;
 }
 
 .currentDate {
   font-size: 1.125rem;
-  color: #374151;
+  color: #64748b;
   margin-bottom: 1.5rem;
   font-weight: 500;
 }
 
 .todaysTasks {
-  background: white;
+  background: #1e293b;
   border-radius: 8px;
   padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #334155;
 }
 
 .todaysTasks h3 {
   font-size: 1.125rem;
-  color: #1f2937;
+  color: #f1f5f9;
   margin-bottom: 1rem;
 }
 
@@ -75,13 +150,13 @@
   grid-template-columns: 1fr repeat(var(--child-count, 2), minmax(80px, 100px));
   gap: 0.5rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #334155;
   font-weight: 600;
   font-size: 0.875rem;
 }
 
 .taskNameHeader {
-  color: #6b7280;
+  color: #64748b;
 }
 
 .childHeader {
@@ -100,7 +175,7 @@
 
 .totalPoints {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .redeemBtn {
@@ -124,7 +199,7 @@
   grid-template-columns: 1fr repeat(var(--child-count, 2), minmax(80px, 100px));
   gap: 0.5rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #1e293b;
   align-items: center;
 }
 
@@ -132,11 +207,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+  color: #e2e8f0;
 }
 
 .taskPoints {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .taskCheckbox {
@@ -207,18 +283,18 @@
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #6b7280;
+  color: #64748b;
   font-size: 1.1rem;
-  background: white;
+  background: #1e293b;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #334155;
 }
 
 .loading {
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 @media (min-width: 1024px) {

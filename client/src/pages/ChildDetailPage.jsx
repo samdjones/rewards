@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { childrenAPI } from '../api/children';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Avatar from '../components/Avatar';
+import DeductModal from '../components/DeductModal';
 import styles from './ChildDetailPage.module.css';
 
 const ChildDetailPage = () => {
@@ -12,6 +13,7 @@ const ChildDetailPage = () => {
   const [activity, setActivity] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDeductModal, setShowDeductModal] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -76,13 +78,21 @@ const ChildDetailPage = () => {
             <span className={styles.pointsValue}>{child.current_points}</span>
             <span className={styles.pointsLabel}>current points</span>
           </div>
-          <button
-            onClick={handleResetPoints}
-            className={styles.resetBtn}
-            disabled={child.current_points === 0}
-          >
-            Reset Points
-          </button>
+          <div className={styles.pointActions}>
+            <button
+              onClick={() => setShowDeductModal(true)}
+              className={styles.deductBtn}
+            >
+              Deduct Points
+            </button>
+            <button
+              onClick={handleResetPoints}
+              className={styles.resetBtn}
+              disabled={child.current_points === 0}
+            >
+              Reset Points
+            </button>
+          </div>
         </div>
       </div>
 
@@ -189,6 +199,13 @@ const ChildDetailPage = () => {
           </div>
         )}
       </div>
+      {showDeductModal && (
+        <DeductModal
+          child={child}
+          onClose={() => setShowDeductModal(false)}
+          onDeducted={() => { setShowDeductModal(false); loadData(); }}
+        />
+      )}
     </div>
   );
 };

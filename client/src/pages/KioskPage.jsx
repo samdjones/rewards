@@ -142,7 +142,7 @@ const KioskPage = () => {
   }
 
   // Dashboard view
-  const { family, children, tasks, completions } = dashboardData || {};
+  const { family, children, tasks, completions, deductions } = dashboardData || {};
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -151,8 +151,18 @@ const KioskPage = () => {
     const d = new Date(today + 'T12:00:00');
     const dayOfWeek = d.getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isHolidayMode = family?.holiday_mode;
 
     return tasks.filter(task => {
+      if (isHolidayMode) {
+        if (task.repeat_schedule === 'daily') return true;
+        if (task.repeat_schedule === 'holidays') return true;
+        if (task.repeat_schedule === 'weekdays') return false;
+        if (task.repeat_schedule === 'weekends') return false;
+        if (task.repeat_schedule === 'none') return true;
+        return false;
+      }
+      if (task.repeat_schedule === 'holidays') return false;
       if (task.repeat_schedule === 'daily') return true;
       if (task.repeat_schedule === 'weekdays' && !isWeekend) return true;
       if (task.repeat_schedule === 'weekends' && isWeekend) return true;
@@ -239,6 +249,27 @@ const KioskPage = () => {
                 })}
               </div>
             ))}
+            {deductions && deductions.length > 0 && (
+              <>
+                <div className={styles.deductionsSeparator}>
+                  <span className={styles.deductionsSeparatorLabel}>Deductions</span>
+                </div>
+                {deductions.map(d => (
+                  <div key={d.id} className={styles.deductionRow}>
+                    <div className={styles.taskCell}>
+                      <span className={styles.deductionReason}>{d.reason || 'Point deduction'}</span>
+                    </div>
+                    {children.map(child => (
+                      <div key={child.id} className={styles.statusCell}>
+                        {d.child_id === child.id && (
+                          <span className={styles.deductionBadge}>{d.amount} pts</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>
