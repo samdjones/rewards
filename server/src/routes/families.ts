@@ -14,6 +14,8 @@ import {
   regenerateInviteCode,
   toggleHolidayMode,
   updateWeatherLocation,
+  updateBusSettings,
+  testBusSettings,
   updateSlideshowSettings,
   resetFamilyHistory,
 } from '../controllers/familyController.js';
@@ -44,6 +46,10 @@ router.post('/current/holiday-mode', requireFamilyAdmin, toggleHolidayMode);
 
 // Weather location
 router.put('/current/weather-location', requireFamilyAdmin, updateWeatherLocation);
+
+// Bus settings
+router.put('/current/bus-settings', requireFamilyAdmin, updateBusSettings);
+router.get('/current/bus-settings/test', requireFamilyAdmin, testBusSettings);
 
 // Slideshow settings
 router.put('/current/slideshow-settings', requireFamilyAdmin, updateSlideshowSettings);

@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS families (
   slideshow_mode TEXT DEFAULT 'off',
   slideshow_interval INTEGER DEFAULT 30,
   slideshow_include_avatars INTEGER DEFAULT 0,
+  bus_stop_atco_code TEXT,
+  bus_route_filter TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

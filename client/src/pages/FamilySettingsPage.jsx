@@ -27,6 +27,10 @@ const FamilySettingsPage = () => {
   const [slideshowInterval, setSlideshowInterval] = useState(user?.family?.slideshow_interval || 30);
   const [slideshowIncludeAvatars, setSlideshowIncludeAvatars] = useState(0);
   const [slideshowSaveStatus, setSlideshowSaveStatus] = useState('');
+  const [busStopCode, setBusStopCode] = useState('');
+  const [busRouteFilter, setBusRouteFilter] = useState('');
+  const [busSaveStatus, setBusSaveStatus] = useState('');
+  const [busTestResult, setBusTestResult] = useState(null);
   const photoInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -62,6 +66,8 @@ const FamilySettingsPage = () => {
             setSlideshowMode(familyData.family.slideshow_mode || 'off');
             setSlideshowInterval(familyData.family.slideshow_interval || 30);
             setSlideshowIncludeAvatars(familyData.family.slideshow_include_avatars || 0);
+            setBusStopCode(familyData.family.bus_stop_atco_code || '');
+            setBusRouteFilter(familyData.family.bus_route_filter || '');
           }
         } catch (_err) {
           // Slideshow settings are non-critical
@@ -183,6 +189,36 @@ const FamilySettingsPage = () => {
       setPhotos(prev => prev.filter(p => p.id !== photoId));
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const handleSaveBusSettings = async () => {
+    try {
+      setActionLoading(true);
+      setBusSaveStatus('');
+      await familiesAPI.updateBusSettings({
+        bus_stop_atco_code: busStopCode,
+        bus_route_filter: busRouteFilter
+      });
+      setBusSaveStatus('Saved');
+      setTimeout(() => setBusSaveStatus(''), 3000);
+    } catch (err) {
+      setBusSaveStatus('Error: ' + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleTestBusSettings = async () => {
+    try {
+      setActionLoading(true);
+      setBusTestResult(null);
+      const result = await familiesAPI.testBusSettings();
+      setBusTestResult(result);
+    } catch (err) {
+      setBusTestResult({ ok: false, error: err.message });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -426,6 +462,73 @@ const FamilySettingsPage = () => {
             <p className={weatherSaveStatus.startsWith('Error') ? styles.error : styles.successMsg}>
               {weatherSaveStatus}
             </p>
+          )}
+        </section>
+      )}
+
+      {/* Bus Times Section (Admin Only) */}
+      {isAdmin && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Bus Times</h2>
+          <p className={styles.sectionDescription}>
+            Show live bus departures on the kiosk. Enter an ATCO code for your bus stop
+            (e.g. 149000006928 for Brighton Station). Optionally filter by route numbers
+            (comma-separated). Leave blank to disable. Use Test to verify your configuration.
+          </p>
+          <div className={styles.kioskPairBox}>
+            <input
+              type="text"
+              value={busStopCode}
+              onChange={(e) => setBusStopCode(e.target.value)}
+              placeholder="ATCO code (e.g. 149000006928)"
+              className={styles.kioskInput}
+            />
+          </div>
+          <div className={styles.kioskPairBox}>
+            <input
+              type="text"
+              value={busRouteFilter}
+              onChange={(e) => setBusRouteFilter(e.target.value)}
+              placeholder="Route filter (e.g. 1, 1A, 49)"
+              className={styles.kioskInput}
+            />
+            <button
+              onClick={handleSaveBusSettings}
+              className={styles.btnSecondary}
+              disabled={actionLoading}
+            >
+              Save
+            </button>
+            <button
+              onClick={handleTestBusSettings}
+              className={styles.btnSecondary}
+              disabled={actionLoading || !busStopCode.trim()}
+            >
+              Test
+            </button>
+          </div>
+          {busSaveStatus && (
+            <p className={busSaveStatus.startsWith('Error') ? styles.error : styles.successMsg}>
+              {busSaveStatus}
+            </p>
+          )}
+          {busTestResult && (
+            <div className={busTestResult.ok ? styles.successMsg : styles.error} style={{ marginTop: '0.5rem' }}>
+              {busTestResult.ok ? (
+                <>
+                  <strong>{busTestResult.stop_name}</strong> — {busTestResult.departure_count} departure{busTestResult.departure_count !== 1 ? 's' : ''} found
+                  {busTestResult.departures?.length > 0 && (
+                    <div style={{ marginTop: '0.25rem', fontSize: '0.85rem' }}>
+                      {busTestResult.departures.map((d, i) => (
+                        <div key={i}>{d.line} → {d.direction} at {d.best_departure_estimate}</div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>Bus times error: {busTestResult.error}</>
+              )}
+            </div>
           )}
         </section>
       )}

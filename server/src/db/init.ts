@@ -364,6 +364,23 @@ const runMigrations = (): void => {
     saveDatabase();
   }
 
+  // Migration: Add bus_stop_atco_code and bus_route_filter columns to families
+  const familiesInfoForBus = db.exec('PRAGMA table_info(families)');
+  const familiesColsForBus =
+    familiesInfoForBus.length > 0
+      ? familiesInfoForBus[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!familiesColsForBus.includes('bus_stop_atco_code')) {
+    console.log('Running migration: Adding bus columns to families...');
+
+    db.run('ALTER TABLE families ADD COLUMN bus_stop_atco_code TEXT');
+    db.run('ALTER TABLE families ADD COLUMN bus_route_filter TEXT');
+
+    console.log('Migration completed: bus columns added');
+    saveDatabase();
+  }
+
   if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
     console.log('Running migration: Clearing old filename-based profile images...');
 

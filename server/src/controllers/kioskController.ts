@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import db from '../db/wrapper.js';
 import { getWeatherForFamily } from '../utils/weather.js';
+import { getBusTimesForFamily } from '../utils/bustime.js';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const CODE_LENGTH = 6;
@@ -134,8 +135,8 @@ export const getDashboardData = (req: Request, res: Response): void => {
     const familyId = req.familyId;
     const today = new Date().toISOString().split('T')[0];
 
-    const family = db.prepare<{ name: string; profile_image: string | null; holiday_mode: number; slideshow_mode: string; slideshow_interval: number; slideshow_include_avatars: number }>(
-      'SELECT name, profile_image, holiday_mode, slideshow_mode, slideshow_interval, slideshow_include_avatars FROM families WHERE id = ?'
+    const family = db.prepare<{ name: string; profile_image: string | null; holiday_mode: number; slideshow_mode: string; slideshow_interval: number; slideshow_include_avatars: number; bus_stop_atco_code: string | null; bus_route_filter: string | null }>(
+      'SELECT name, profile_image, holiday_mode, slideshow_mode, slideshow_interval, slideshow_include_avatars, bus_stop_atco_code, bus_route_filter FROM families WHERE id = ?'
     ).get(familyId);
 
     const children = db.prepare<Record<string, unknown>>(
@@ -189,6 +190,26 @@ export const getWeather = async (req: Request, res: Response): Promise<void> => 
   } catch (error) {
     console.error('Get weather error:', error);
     res.status(500).json({ error: 'Failed to fetch weather data' });
+  }
+};
+
+export const getBusTimes = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const familyId = req.familyId!;
+    const family = db.prepare<{ bus_stop_atco_code: string | null; bus_route_filter: string | null }>(
+      'SELECT bus_stop_atco_code, bus_route_filter FROM families WHERE id = ?'
+    ).get(familyId);
+
+    if (!family?.bus_stop_atco_code) {
+      res.json({ enabled: false });
+      return;
+    }
+
+    const busData = await getBusTimesForFamily(familyId, family.bus_stop_atco_code, family.bus_route_filter);
+    res.json({ enabled: true, ...busData });
+  } catch (error) {
+    console.error('Get bus times error:', error);
+    res.status(500).json({ error: 'Failed to fetch bus times' });
   }
 };
 

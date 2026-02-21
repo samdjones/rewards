@@ -10,6 +10,8 @@ export interface Family {
   slideshow_mode: string;
   slideshow_interval: number;
   slideshow_include_avatars: number;
+  bus_stop_atco_code: string | null;
+  bus_route_filter: string | null;
   created_at: string;
 }
 
