@@ -6,6 +6,7 @@ import styles from './KioskPage.module.css';
 const POLL_INTERVAL = 3000;
 const REFRESH_INTERVAL = 30000;
 const PHOTO_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const VERSION_CHECK_INTERVAL = 60000; // 1 minute
 
 const WMO_EMOJI = {
   0: '☀️',
@@ -133,7 +134,9 @@ const KioskPage = () => {
     return () => clearInterval(pollRef.current);
   }, [state, sessionToken, loadPhotos]);
 
-  // Auto-refresh dashboard data
+  // Auto-refresh dashboard data and photos when settings change
+  const prevSlideshowSettingsRef = useRef('');
+
   useEffect(() => {
     if (state !== 'dashboard') return;
 
@@ -143,6 +146,13 @@ const KioskPage = () => {
         setDashboardData(data);
         setFamilyName(data.family.name);
         kioskAPI.getWeather().then(setWeatherData).catch(() => {});
+
+        // Re-fetch photos when slideshow settings change
+        const settingsKey = `${data.family?.slideshow_mode}|${data.family?.slideshow_include_avatars}`;
+        if (prevSlideshowSettingsRef.current && prevSlideshowSettingsRef.current !== settingsKey) {
+          loadPhotos();
+        }
+        prevSlideshowSettingsRef.current = settingsKey;
       } catch (_err) {
         // If auth fails, go back to pairing
         setState('loading');
@@ -152,7 +162,7 @@ const KioskPage = () => {
 
     refreshRef.current = setInterval(refresh, REFRESH_INTERVAL);
     return () => clearInterval(refreshRef.current);
-  }, [state, requestCode]);
+  }, [state, requestCode, loadPhotos]);
 
   // Refresh photos periodically
   useEffect(() => {
@@ -161,6 +171,29 @@ const KioskPage = () => {
     const interval = setInterval(loadPhotos, PHOTO_REFRESH_INTERVAL);
     return () => clearInterval(interval);
   }, [state, loadPhotos]);
+
+  // Auto-reload when app is redeployed (detects changed asset hashes in index.html)
+  const indexHtmlRef = useRef(null);
+
+  useEffect(() => {
+    const checkForUpdate = async () => {
+      try {
+        const res = await fetch('/', { cache: 'no-store' });
+        const html = await res.text();
+        if (indexHtmlRef.current === null) {
+          indexHtmlRef.current = html;
+        } else if (indexHtmlRef.current !== html) {
+          window.location.reload();
+        }
+      } catch (_err) {
+        // Network error, skip
+      }
+    };
+
+    checkForUpdate();
+    const interval = setInterval(checkForUpdate, VERSION_CHECK_INTERVAL);
+    return () => clearInterval(interval);
+  }, []);
 
   // Photo cycling effect
   const slideshowMode = dashboardData?.family?.slideshow_mode || 'off';
