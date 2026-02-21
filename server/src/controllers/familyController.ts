@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { Family, FamilyMember, FamilyRole } from '@rewards/shared';
 import db from '../db/wrapper.js';
 import { generateInviteCode, isValidInviteCodeFormat } from '../utils/inviteCode.js';
+import { invalidateWeatherCache } from '../utils/weather.js';
 
 interface CountRow {
   count: number;
@@ -375,6 +376,26 @@ export const toggleHolidayMode = (req: Request, res: Response): void => {
     console.error('Toggle holiday mode error:', error);
     res.status(500).json({ error: 'Server error' });
   }
+};
+
+// Update weather location (admin only)
+export const updateWeatherLocation = (req: Request, res: Response): void => {
+  const { location } = req.body;
+
+  if (typeof location !== 'string') {
+    res.status(400).json({ error: 'location must be a string' });
+    return;
+  }
+
+  const trimmed = location.trim();
+  db.prepare('UPDATE families SET weather_location = ? WHERE id = ?').run(
+    trimmed || null,
+    req.familyId
+  );
+
+  invalidateWeatherCache(req.familyId!);
+
+  res.json({ weather_location: trimmed || null });
 };
 
 // Reset all history (admin only) - clears completions, redemptions, adjustments, and resets points

@@ -58,5 +58,13 @@ export const kioskAPI = {
     });
     if (!res.ok) throw new Error('Failed to remove kiosk session');
     return res.json();
+  },
+
+  getWeather: async () => {
+    const res = await fetch(`${API_URL}/kiosk/weather`, {
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('Failed to fetch weather data');
+    return res.json();
   }
 };

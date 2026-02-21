@@ -69,6 +69,12 @@
   margin-bottom: 1rem;
 }
 
+.successMsg {
+  color: #6ee7b7;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
 .section {
   background: #1e293b;
   border: 1px solid #334155;

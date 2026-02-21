@@ -296,6 +296,22 @@ const runMigrations = (): void => {
     saveDatabase();
   }
 
+  // Migration: Add weather_location column to families
+  const familiesInfoForWeather = db.exec('PRAGMA table_info(families)');
+  const familiesColsForWeather =
+    familiesInfoForWeather.length > 0
+      ? familiesInfoForWeather[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!familiesColsForWeather.includes('weather_location')) {
+    console.log('Running migration: Adding weather_location to families...');
+
+    db.run('ALTER TABLE families ADD COLUMN weather_location TEXT');
+
+    console.log('Migration completed: weather_location added');
+    saveDatabase();
+  }
+
   if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
     console.log('Running migration: Clearing old filename-based profile images...');
 

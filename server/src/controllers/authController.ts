@@ -10,6 +10,7 @@ interface FamilyMembershipRow {
   family_name: string;
   family_profile_image: string | null;
   family_holiday_mode: number;
+  family_weather_location: string | null;
 }
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -130,7 +131,7 @@ export const me = (req: Request, res: Response): void => {
     const membership = db
       .prepare<FamilyMembershipRow>(
         `
-      SELECT fm.family_id, fm.role, f.name as family_name, f.profile_image as family_profile_image, f.holiday_mode as family_holiday_mode
+      SELECT fm.family_id, fm.role, f.name as family_name, f.profile_image as family_profile_image, f.holiday_mode as family_holiday_mode, f.weather_location as family_weather_location
       FROM family_members fm
       JOIN families f ON fm.family_id = f.id
       WHERE fm.user_id = ?
@@ -148,6 +149,7 @@ export const me = (req: Request, res: Response): void => {
               role: membership.role,
               profile_image: membership.family_profile_image,
               holiday_mode: membership.family_holiday_mode,
+              weather_location: membership.family_weather_location,
             }
           : null,
       },

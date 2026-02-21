@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import db from '../db/wrapper.js';
+import { getWeatherForFamily } from '../utils/weather.js';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const CODE_LENGTH = 6;
@@ -168,6 +169,26 @@ export const getDashboardData = (req: Request, res: Response): void => {
   } catch (error) {
     console.error('Get kiosk dashboard data error:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const getWeather = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const familyId = req.familyId!;
+    const family = db.prepare<{ weather_location: string | null }>(
+      'SELECT weather_location FROM families WHERE id = ?'
+    ).get(familyId);
+
+    if (!family?.weather_location) {
+      res.json({ enabled: false });
+      return;
+    }
+
+    const weatherData = await getWeatherForFamily(familyId, family.weather_location);
+    res.json({ enabled: true, ...weatherData });
+  } catch (error) {
+    console.error('Get weather error:', error);
+    res.status(500).json({ error: 'Failed to fetch weather data' });
   }
 };
 

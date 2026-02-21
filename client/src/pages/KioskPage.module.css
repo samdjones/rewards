@@ -239,3 +239,52 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+
+/* Weather strip */
+.weatherStrip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.weatherLocation {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.weatherHour {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 3rem;
+}
+
+.weatherTime {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.weatherEmoji {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.weatherTemp {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.weatherPrecip {
+  font-size: 0.65rem;
+  color: #60a5fa;
+}

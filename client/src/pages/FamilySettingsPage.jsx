@@ -19,6 +19,8 @@ const FamilySettingsPage = () => {
   const [kioskCode, setKioskCode] = useState('');
   const [kioskSessions, setKioskSessions] = useState([]);
   const [holidayMode, setHolidayMode] = useState(user?.family?.holiday_mode || 0);
+  const [weatherLocation, setWeatherLocation] = useState(user?.family?.weather_location || '');
+  const [weatherSaveStatus, setWeatherSaveStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -101,6 +103,20 @@ const FamilySettingsPage = () => {
       await refreshUser();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSaveWeatherLocation = async () => {
+    try {
+      setActionLoading(true);
+      setWeatherSaveStatus('');
+      await familiesAPI.setWeatherLocation(weatherLocation);
+      setWeatherSaveStatus('Saved');
+      setTimeout(() => setWeatherSaveStatus(''), 3000);
+    } catch (err) {
+      setWeatherSaveStatus('Error: ' + err.message);
     } finally {
       setActionLoading(false);
     }
@@ -294,6 +310,38 @@ const FamilySettingsPage = () => {
               </div>
             </label>
           </div>
+        </section>
+      )}
+
+      {/* Weather Display Section (Admin Only) */}
+      {isAdmin && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Weather Display</h2>
+          <p className={styles.sectionDescription}>
+            Show a 24-hour weather strip on the kiosk. Enter a city name (e.g. London, UK).
+            Leave blank to disable.
+          </p>
+          <div className={styles.kioskPairBox}>
+            <input
+              type="text"
+              value={weatherLocation}
+              onChange={(e) => setWeatherLocation(e.target.value)}
+              placeholder="e.g. London, UK"
+              className={styles.kioskInput}
+            />
+            <button
+              onClick={handleSaveWeatherLocation}
+              className={styles.btnSecondary}
+              disabled={actionLoading}
+            >
+              Save
+            </button>
+          </div>
+          {weatherSaveStatus && (
+            <p className={weatherSaveStatus.startsWith('Error') ? styles.error : styles.successMsg}>
+              {weatherSaveStatus}
+            </p>
+          )}
         </section>
       )}
 

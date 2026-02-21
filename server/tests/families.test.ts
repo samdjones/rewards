@@ -523,4 +523,58 @@ describe('Families API', () => {
       expect(res.status).toBe(403);
     });
   });
+
+  describe('PUT /api/families/current/weather-location', () => {
+    it('should allow admin to set a weather location', async () => {
+      const { cookie } = await setupUserWithFamily(app);
+
+      const res = await request(app)
+        .put('/api/families/current/weather-location')
+        .set('Cookie', cookie)
+        .send({ location: 'London, UK' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.weather_location).toBe('London, UK');
+    });
+
+    it('should allow admin to clear location with empty string', async () => {
+      const { cookie } = await setupUserWithFamily(app);
+
+      // Set a location first
+      await request(app)
+        .put('/api/families/current/weather-location')
+        .set('Cookie', cookie)
+        .send({ location: 'Paris, France' });
+
+      // Clear it
+      const res = await request(app)
+        .put('/api/families/current/weather-location')
+        .set('Cookie', cookie)
+        .send({ location: '' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.weather_location).toBeNull();
+    });
+
+    it('should return 403 for non-admin', async () => {
+      const { family } = await setupUserWithFamily(app, {
+        email: 'admin@example.com',
+      });
+
+      // Add second user as member
+      const user2Res = await registerUser(app, { email: 'user2@example.com' });
+      const user2Cookie = getCookie(user2Res);
+      await request(app)
+        .post('/api/families/join')
+        .set('Cookie', user2Cookie)
+        .send({ invite_code: family.invite_code });
+
+      const res = await request(app)
+        .put('/api/families/current/weather-location')
+        .set('Cookie', user2Cookie)
+        .send({ location: 'Berlin, Germany' });
+
+      expect(res.status).toBe(403);
+    });
+  });
 });

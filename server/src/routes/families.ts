@@ -13,6 +13,7 @@ import {
   getInviteCode,
   regenerateInviteCode,
   toggleHolidayMode,
+  updateWeatherLocation,
   resetFamilyHistory,
 } from '../controllers/familyController.js';
 
@@ -39,6 +40,9 @@ router.post('/current/invite-code/regenerate', requireFamilyAdmin, regenerateInv
 
 // Holiday mode
 router.post('/current/holiday-mode', requireFamilyAdmin, toggleHolidayMode);
+
+// Weather location
+router.put('/current/weather-location', requireFamilyAdmin, updateWeatherLocation);
 
 // Reset history
 router.post('/current/reset-history', requireFamilyAdmin, resetFamilyHistory);

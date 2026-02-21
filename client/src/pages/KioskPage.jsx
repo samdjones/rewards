@@ -6,6 +6,27 @@ import styles from './KioskPage.module.css';
 const POLL_INTERVAL = 3000;
 const REFRESH_INTERVAL = 30000;
 
+const WMO_EMOJI = {
+  0: '☀️',
+  1: '🌤️', 2: '⛅', 3: '☁️',
+  45: '🌫️', 48: '🌫️',
+  51: '🌦️', 53: '🌦️', 55: '🌦️',
+  61: '🌧️', 63: '🌧️', 65: '🌧️',
+  71: '🌨️', 73: '🌨️', 75: '🌨️',
+  80: '🌦️', 81: '🌦️', 82: '🌦️',
+  95: '⛈️', 96: '⛈️', 99: '⛈️',
+};
+
+const getWeatherEmoji = (code) => WMO_EMOJI[code] ?? '🌡️';
+
+const formatHourLabel = (isoTime) => {
+  const d = new Date(isoTime);
+  const h = d.getHours();
+  if (h === 0) return '12am';
+  if (h === 12) return '12pm';
+  return h < 12 ? `${h}am` : `${h - 12}pm`;
+};
+
 const KioskPage = () => {
   const [state, setState] = useState('loading'); // loading, pairing, dashboard
   const [code, setCode] = useState('');
@@ -14,6 +35,7 @@ const KioskPage = () => {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [familyName, setFamilyName] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
+  const [weatherData, setWeatherData] = useState(null);
   const pollRef = useRef(null);
   const refreshRef = useRef(null);
   const countdownRef = useRef(null);
@@ -45,6 +67,7 @@ const KioskPage = () => {
         setDashboardData(data);
         setFamilyName(data.family.name);
         setState('dashboard');
+        kioskAPI.getWeather().then(setWeatherData).catch(() => {});
       } catch (_err) {
         // Not paired yet, request a code
         requestCode();
@@ -83,6 +106,7 @@ const KioskPage = () => {
           const dashData = await kioskAPI.getDashboardData();
           setDashboardData(dashData);
           setState('dashboard');
+          kioskAPI.getWeather().then(setWeatherData).catch(() => {});
         }
       } catch (_err) {
         // Ignore poll errors
@@ -102,6 +126,7 @@ const KioskPage = () => {
         const data = await kioskAPI.getDashboardData();
         setDashboardData(data);
         setFamilyName(data.family.name);
+        kioskAPI.getWeather().then(setWeatherData).catch(() => {});
       } catch (_err) {
         // If auth fails, go back to pairing
         setState('loading');
@@ -270,6 +295,24 @@ const KioskPage = () => {
                 ))}
               </>
             )}
+          </div>
+        )}
+        {weatherData?.enabled && weatherData.hours?.length > 0 && (
+          <div className={styles.weatherStrip}>
+            <span className={styles.weatherLocation}>{weatherData.location}</span>
+            {weatherData.hours
+              .filter((_, i) => i % 3 === 0)
+              .slice(0, 8)
+              .map((hour) => (
+                <div key={hour.time} className={styles.weatherHour}>
+                  <span className={styles.weatherTime}>{formatHourLabel(hour.time)}</span>
+                  <span className={styles.weatherEmoji}>{getWeatherEmoji(hour.weatherCode)}</span>
+                  <span className={styles.weatherTemp}>{hour.temp}°</span>
+                  {hour.precipProb > 20 && (
+                    <span className={styles.weatherPrecip}>{hour.precipProb}%</span>
+                  )}
+                </div>
+              ))}
           </div>
         )}
       </div>

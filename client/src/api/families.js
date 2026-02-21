@@ -173,5 +173,20 @@ export const familiesAPI = {
       throw new Error(data.error || 'Failed to reset history');
     }
     return res.json();
+  },
+
+  // Set weather location (admin only)
+  setWeatherLocation: async (location) => {
+    const res = await fetch(`${API_URL}/families/current/weather-location`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ location })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to update weather location');
+    }
+    return res.json();
   }
 };
