@@ -14,6 +14,8 @@ ExecStart=/usr/bin/podman run --name rewards-app \
   -e JWT_SECRET=${JWT_SECRET} \
   -e NODE_ENV=production \
   -e DATABASE_PATH=/data/database.db \
+  -e TRANSPORT_API_APP_ID=${TRANSPORT_API_APP_ID} \
+  -e TRANSPORT_API_APP_KEY=${TRANSPORT_API_APP_KEY} \
   rewards-app:latest
 ExecStop=/usr/bin/podman stop rewards-app
 ExecStopPost=-/usr/bin/podman rm -f rewards-app
