@@ -9,3 +9,13 @@ export const processImage = async (buffer: Buffer): Promise<string> => {
   const base64 = processed.toString('base64');
   return `data:image/webp;base64,${base64}`;
 };
+
+export const processPhotoImage = async (buffer: Buffer): Promise<string> => {
+  const processed = await sharp(buffer)
+    .resize(1280, 720, { fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
+
+  const base64 = processed.toString('base64');
+  return `data:image/webp;base64,${base64}`;
+};

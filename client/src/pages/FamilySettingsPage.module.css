@@ -392,6 +392,102 @@
   color: #64748b;
 }
 
+/* Slideshow / Picture Frame settings */
+.slideshowSettings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #0f172a;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.settingLabel {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  min-width: 140px;
+}
+
+.settingSelect {
+  padding: 0.4rem 0.75rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-size: 0.875rem;
+}
+
+.settingRange {
+  flex: 1;
+  min-width: 120px;
+  accent-color: #6366f1;
+}
+
+.photoUploadRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.photoCount {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.photoItem {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.photoThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoDeleteBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.7);
+  color: #f87171;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.photoItem:hover .photoDeleteBtn {
+  opacity: 1;
+}
+
 @media (max-width: 600px) {
   .memberItem {
     flex-direction: column;

@@ -5,6 +5,7 @@ import styles from './KioskPage.module.css';
 
 const POLL_INTERVAL = 3000;
 const REFRESH_INTERVAL = 30000;
+const PHOTO_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 const WMO_EMOJI = {
   0: '☀️',
@@ -36,6 +37,10 @@ const KioskPage = () => {
   const [familyName, setFamilyName] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
   const [weatherData, setWeatherData] = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [showingPhoto, setShowingPhoto] = useState(false);
+  const [photoFade, setPhotoFade] = useState(true);
   const pollRef = useRef(null);
   const refreshRef = useRef(null);
   const countdownRef = useRef(null);
@@ -59,6 +64,15 @@ const KioskPage = () => {
 
   useEffect(() => { requestCodeRef.current = requestCode; }, [requestCode]);
 
+  const loadPhotos = useCallback(async () => {
+    try {
+      const data = await kioskAPI.getPhotos();
+      setPhotos(data.photos || []);
+    } catch (_err) {
+      // Photos are non-critical
+    }
+  }, []);
+
   // Try to load dashboard data (in case we're already paired via cookie)
   useEffect(() => {
     const tryExistingSession = async () => {
@@ -68,13 +82,14 @@ const KioskPage = () => {
         setFamilyName(data.family.name);
         setState('dashboard');
         kioskAPI.getWeather().then(setWeatherData).catch(() => {});
+        loadPhotos();
       } catch (_err) {
         // Not paired yet, request a code
         requestCode();
       }
     };
     tryExistingSession();
-  }, [requestCode]);
+  }, [requestCode, loadPhotos]);
 
   // Countdown timer
   useEffect(() => {
@@ -107,6 +122,7 @@ const KioskPage = () => {
           setDashboardData(dashData);
           setState('dashboard');
           kioskAPI.getWeather().then(setWeatherData).catch(() => {});
+          loadPhotos();
         }
       } catch (_err) {
         // Ignore poll errors
@@ -115,7 +131,7 @@ const KioskPage = () => {
 
     pollRef.current = setInterval(poll, POLL_INTERVAL);
     return () => clearInterval(pollRef.current);
-  }, [state, sessionToken]);
+  }, [state, sessionToken, loadPhotos]);
 
   // Auto-refresh dashboard data
   useEffect(() => {
@@ -137,6 +153,50 @@ const KioskPage = () => {
     refreshRef.current = setInterval(refresh, REFRESH_INTERVAL);
     return () => clearInterval(refreshRef.current);
   }, [state, requestCode]);
+
+  // Refresh photos periodically
+  useEffect(() => {
+    if (state !== 'dashboard') return;
+
+    const interval = setInterval(loadPhotos, PHOTO_REFRESH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [state, loadPhotos]);
+
+  // Photo cycling effect
+  const slideshowMode = dashboardData?.family?.slideshow_mode || 'off';
+  const slideshowInterval = (dashboardData?.family?.slideshow_interval || 30) * 1000;
+
+  useEffect(() => {
+    if (state !== 'dashboard' || slideshowMode === 'off' || photos.length === 0) return;
+
+    const tick = () => {
+      // Fade out
+      setPhotoFade(false);
+
+      setTimeout(() => {
+        if (slideshowMode === 'fullscreen') {
+          setShowingPhoto(prev => {
+            if (prev) {
+              // Was showing photo, go back to dashboard, advance index
+              setCurrentPhotoIndex(i => (i + 1) % photos.length);
+            }
+            return !prev;
+          });
+        } else {
+          // dedicated mode: just advance photo
+          setCurrentPhotoIndex(i => (i + 1) % photos.length);
+        }
+        // Fade in
+        setPhotoFade(true);
+      }, 400);
+    };
+
+    const interval = setInterval(tick, slideshowInterval);
+    return () => clearInterval(interval);
+  }, [state, slideshowMode, slideshowInterval, photos.length]);
+
+  // Clamp photo index when photos array changes
+  const safePhotoIndex = photos.length > 0 ? currentPhotoIndex % photos.length : 0;
 
   if (state === 'loading') {
     return <div className={styles.kiosk}><div className={styles.loading}>Loading...</div></div>;
@@ -214,107 +274,156 @@ const KioskPage = () => {
   };
 
   const tasksForToday = getTasksForToday();
+  const currentPhoto = photos.length > 0 ? photos[safePhotoIndex] : null;
 
+  // Fullscreen photo mode
+  if (slideshowMode === 'fullscreen' && showingPhoto && currentPhoto) {
+    return (
+      <div className={styles.kiosk}>
+        <div className={`${styles.fullscreenPhoto} ${photoFade ? styles.fadeIn : styles.fadeOut}`}>
+          <img
+            src={currentPhoto.image_data}
+            alt={currentPhoto.caption || 'Family photo'}
+            className={styles.fullscreenImage}
+          />
+          {currentPhoto.caption && (
+            <div className={styles.photoCaption}>{currentPhoto.caption}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const dashboardContent = (
+    <>
+      {(!children || children.length === 0) ? (
+        <div className={styles.emptyState}>No kids added yet</div>
+      ) : tasksForToday.length === 0 ? (
+        <div className={styles.emptyState}>No tasks scheduled for today</div>
+      ) : (
+        <div className={styles.taskGrid} style={{ '--child-count': children.length }}>
+          <div className={styles.gridHeader}>
+            <div className={styles.familyCol}>
+              <Avatar
+                profileImage={family?.profile_image}
+                avatarColor="#6366f1"
+                name={family?.name || 'F'}
+                size={72}
+              />
+              <span className={styles.familyName}>{familyName}</span>
+              <span className={styles.dateDisplay}>
+                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              </span>
+            </div>
+            {children.map(child => (
+              <div key={child.id} className={styles.childCol}>
+                <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={72} />
+                <span className={styles.childName} style={{ color: child.avatar_color }}>{child.name}</span>
+                <span className={styles.childDailyPts}>{getDailyPoints(child.id)} pts today</span>
+                <span className={styles.childTotalPts}>{child.current_points} pts total</span>
+              </div>
+            ))}
+          </div>
+          {tasksForToday.map(task => (
+            <div key={task.id} className={styles.gridRow}>
+              <div className={styles.taskCell}>
+                <span className={styles.taskName}>{task.name}</span>
+                <span className={styles.taskPts}>{task.point_value} pts</span>
+              </div>
+              {children.map(child => {
+                const count = completionMap[`${task.id}-${child.id}`] || 0;
+                return (
+                  <div key={child.id} className={styles.statusCell}>
+                    {task.repeat_schedule === 'none' ? (
+                      count > 0 ? (
+                        <span className={styles.completedBadge}>x{count}</span>
+                      ) : (
+                        <span className={styles.pendingBadge}>-</span>
+                      )
+                    ) : (
+                      count > 0 ? (
+                        <span className={styles.checkMark}>&#10003;</span>
+                      ) : (
+                        <span className={styles.pendingMark}>&#9675;</span>
+                      )
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+          {deductions && deductions.length > 0 && (
+            <>
+              <div className={styles.deductionsSeparator}>
+                <span className={styles.deductionsSeparatorLabel}>Deductions</span>
+              </div>
+              {deductions.map(d => (
+                <div key={d.id} className={styles.deductionRow}>
+                  <div className={styles.taskCell}>
+                    <span className={styles.deductionReason}>{d.reason || 'Point deduction'}</span>
+                  </div>
+                  {children.map(child => (
+                    <div key={child.id} className={styles.statusCell}>
+                      {d.child_id === child.id && (
+                        <span className={styles.deductionBadge}>{d.amount} pts</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+      {weatherData?.enabled && weatherData.hours?.length > 0 && (
+        <div className={styles.weatherStrip}>
+          <span className={styles.weatherLocation}>{weatherData.location}</span>
+          {weatherData.hours
+            .filter((_, i) => i % 3 === 0)
+            .slice(0, 8)
+            .map((hour) => (
+              <div key={hour.time} className={styles.weatherHour}>
+                <span className={styles.weatherTime}>{formatHourLabel(hour.time)}</span>
+                <span className={styles.weatherEmoji}>{getWeatherEmoji(hour.weatherCode)}</span>
+                <span className={styles.weatherTemp}>{hour.temp}°</span>
+                {hour.precipProb > 20 && (
+                  <span className={styles.weatherPrecip}>{hour.precipProb}%</span>
+                )}
+              </div>
+            ))}
+        </div>
+      )}
+    </>
+  );
+
+  // Dedicated (side panel) mode
+  if (slideshowMode === 'dedicated' && photos.length > 0 && currentPhoto) {
+    return (
+      <div className={styles.kiosk}>
+        <div className={styles.splitView}>
+          <div className={styles.dashboardPane}>
+            {dashboardContent}
+          </div>
+          <div className={styles.photoPane}>
+            <img
+              src={currentPhoto.image_data}
+              alt={currentPhoto.caption || 'Family photo'}
+              className={`${styles.slideshowImage} ${photoFade ? styles.fadeIn : styles.fadeOut}`}
+            />
+            {currentPhoto.caption && (
+              <div className={styles.photoCaption}>{currentPhoto.caption}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal mode (off or no photos)
   return (
     <div className={styles.kiosk}>
       <div className={styles.dashboardView}>
-        {(!children || children.length === 0) ? (
-          <div className={styles.emptyState}>No kids added yet</div>
-        ) : tasksForToday.length === 0 ? (
-          <div className={styles.emptyState}>No tasks scheduled for today</div>
-        ) : (
-          <div className={styles.taskGrid} style={{ '--child-count': children.length }}>
-            <div className={styles.gridHeader}>
-              <div className={styles.familyCol}>
-                <Avatar
-                  profileImage={family?.profile_image}
-                  avatarColor="#6366f1"
-                  name={family?.name || 'F'}
-                  size={72}
-                />
-                <span className={styles.familyName}>{familyName}</span>
-                <span className={styles.dateDisplay}>
-                  {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                </span>
-              </div>
-              {children.map(child => (
-                <div key={child.id} className={styles.childCol}>
-                  <Avatar profileImage={child.profile_image} avatarColor={child.avatar_color} name={child.name} size={72} />
-                  <span className={styles.childName} style={{ color: child.avatar_color }}>{child.name}</span>
-                  <span className={styles.childDailyPts}>{getDailyPoints(child.id)} pts today</span>
-                  <span className={styles.childTotalPts}>{child.current_points} pts total</span>
-                </div>
-              ))}
-            </div>
-            {tasksForToday.map(task => (
-              <div key={task.id} className={styles.gridRow}>
-                <div className={styles.taskCell}>
-                  <span className={styles.taskName}>{task.name}</span>
-                  <span className={styles.taskPts}>{task.point_value} pts</span>
-                </div>
-                {children.map(child => {
-                  const count = completionMap[`${task.id}-${child.id}`] || 0;
-                  return (
-                    <div key={child.id} className={styles.statusCell}>
-                      {task.repeat_schedule === 'none' ? (
-                        count > 0 ? (
-                          <span className={styles.completedBadge}>x{count}</span>
-                        ) : (
-                          <span className={styles.pendingBadge}>-</span>
-                        )
-                      ) : (
-                        count > 0 ? (
-                          <span className={styles.checkMark}>&#10003;</span>
-                        ) : (
-                          <span className={styles.pendingMark}>&#9675;</span>
-                        )
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-            {deductions && deductions.length > 0 && (
-              <>
-                <div className={styles.deductionsSeparator}>
-                  <span className={styles.deductionsSeparatorLabel}>Deductions</span>
-                </div>
-                {deductions.map(d => (
-                  <div key={d.id} className={styles.deductionRow}>
-                    <div className={styles.taskCell}>
-                      <span className={styles.deductionReason}>{d.reason || 'Point deduction'}</span>
-                    </div>
-                    {children.map(child => (
-                      <div key={child.id} className={styles.statusCell}>
-                        {d.child_id === child.id && (
-                          <span className={styles.deductionBadge}>{d.amount} pts</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        )}
-        {weatherData?.enabled && weatherData.hours?.length > 0 && (
-          <div className={styles.weatherStrip}>
-            <span className={styles.weatherLocation}>{weatherData.location}</span>
-            {weatherData.hours
-              .filter((_, i) => i % 3 === 0)
-              .slice(0, 8)
-              .map((hour) => (
-                <div key={hour.time} className={styles.weatherHour}>
-                  <span className={styles.weatherTime}>{formatHourLabel(hour.time)}</span>
-                  <span className={styles.weatherEmoji}>{getWeatherEmoji(hour.weatherCode)}</span>
-                  <span className={styles.weatherTemp}>{hour.temp}°</span>
-                  {hour.precipProb > 20 && (
-                    <span className={styles.weatherPrecip}>{hour.precipProb}%</span>
-                  )}
-                </div>
-              ))}
-          </div>
-        )}
+        {dashboardContent}
       </div>
     </div>
   );

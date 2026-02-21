@@ -175,6 +175,21 @@ export const familiesAPI = {
     return res.json();
   },
 
+  // Update slideshow settings (admin only)
+  updateSlideshowSettings: async ({ slideshow_mode, slideshow_interval }) => {
+    const res = await fetch(`${API_URL}/families/current/slideshow-settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ slideshow_mode, slideshow_interval })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to update slideshow settings');
+    }
+    return res.json();
+  },
+
   // Set weather location (admin only)
   setWeatherLocation: async (location) => {
     const res = await fetch(`${API_URL}/families/current/weather-location`, {

@@ -16,7 +16,22 @@ CREATE TABLE IF NOT EXISTS families (
   profile_image TEXT,
   holiday_mode INTEGER DEFAULT 0,
   weather_location TEXT,
+  slideshow_mode TEXT DEFAULT 'off',
+  slideshow_interval INTEGER DEFAULT 30,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Family Photos Table
+CREATE TABLE IF NOT EXISTS family_photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  family_id INTEGER NOT NULL,
+  uploaded_by INTEGER NOT NULL,
+  image_data TEXT NOT NULL,
+  caption TEXT,
+  sort_order INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
+  FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Family Members Table (join table for users to families)

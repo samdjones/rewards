@@ -6,6 +6,9 @@ export interface Family {
   invite_code: string;
   profile_image: string | null;
   holiday_mode: number;
+  weather_location: string | null;
+  slideshow_mode: string;
+  slideshow_interval: number;
   created_at: string;
 }
 

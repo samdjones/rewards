@@ -297,6 +297,23 @@
   color: #64748b;
 }
 
+/* Photo widget */
+.photoWidget {
+  width: 160px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+}
+
+.photoWidgetImage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
 @media (min-width: 1024px) {
   .familyAvatar {
     transform: scale(2);

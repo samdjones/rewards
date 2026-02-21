@@ -1,5 +1,5 @@
 import express from 'express';
-import { upload } from '../middleware/upload.js';
+import { upload, uploadPhoto } from '../middleware/upload.js';
 import { requireFamily, requireFamilyAdmin } from '../middleware/familyAuth.js';
 import {
   uploadUserProfileImage,
@@ -9,6 +9,11 @@ import {
   uploadFamilyProfileImage,
   deleteFamilyProfileImage,
 } from '../controllers/uploadController.js';
+import {
+  uploadFamilyPhoto,
+  getFamilyPhotos,
+  deleteFamilyPhoto,
+} from '../controllers/photoController.js';
 
 const router = express.Router();
 
@@ -23,5 +28,10 @@ router.delete('/children/:id/profile-image', requireFamily, deleteChildProfileIm
 // Family profile image (requires admin)
 router.post('/families/current/profile-image', requireFamilyAdmin, upload.single('image'), uploadFamilyProfileImage);
 router.delete('/families/current/profile-image', requireFamilyAdmin, deleteFamilyProfileImage);
+
+// Family photos (requires admin)
+router.post('/families/current/photos', requireFamilyAdmin, uploadPhoto.single('image'), uploadFamilyPhoto);
+router.get('/families/current/photos', requireFamilyAdmin, getFamilyPhotos);
+router.delete('/families/current/photos/:id', requireFamilyAdmin, deleteFamilyPhoto);
 
 export default router;
