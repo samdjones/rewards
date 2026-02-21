@@ -232,7 +232,7 @@ const KioskPage = () => {
   const safePhotoIndex = photos.length > 0 ? currentPhotoIndex % photos.length : 0;
 
   if (state === 'loading') {
-    return <div className={styles.kiosk}><div className={styles.loading}>Loading...</div></div>;
+    return <div className={styles.kiosk}><div className={styles.versionLabel}>v{__APP_VERSION__}</div><div className={styles.loading}>Loading...</div></div>;
   }
 
   if (state === 'pairing') {
@@ -241,6 +241,7 @@ const KioskPage = () => {
 
     return (
       <div className={styles.kiosk}>
+        <div className={styles.versionLabel}>v{__APP_VERSION__}</div>
         <div className={styles.pairingView}>
           <h1 className={styles.pairingTitle}>Kiosk Display</h1>
           <p className={styles.pairingInstructions}>
@@ -313,6 +314,7 @@ const KioskPage = () => {
   if (slideshowMode === 'fullscreen' && showingPhoto && currentPhoto) {
     return (
       <div className={styles.kiosk}>
+        <div className={styles.versionLabel}>v{__APP_VERSION__}</div>
         <div className={`${styles.fullscreenPhoto} ${photoFade ? styles.fadeIn : styles.fadeOut}`}>
           <img
             src={currentPhoto.image_data}
@@ -433,6 +435,7 @@ const KioskPage = () => {
   if (slideshowMode === 'dedicated' && photos.length > 0 && currentPhoto) {
     return (
       <div className={styles.kiosk}>
+        <div className={styles.versionLabel}>v{__APP_VERSION__}</div>
         <div className={styles.splitView}>
           <div className={styles.dashboardPane}>
             {dashboardContent}
@@ -455,6 +458,7 @@ const KioskPage = () => {
   // Normal mode (off or no photos)
   return (
     <div className={styles.kiosk}>
+      <div className={styles.versionLabel}>v{__APP_VERSION__}</div>
       <div className={styles.dashboardView}>
         {dashboardContent}
       </div>
