@@ -176,12 +176,12 @@ export const familiesAPI = {
   },
 
   // Update slideshow settings (admin only)
-  updateSlideshowSettings: async ({ slideshow_mode, slideshow_interval }) => {
+  updateSlideshowSettings: async ({ slideshow_mode, slideshow_interval, slideshow_include_avatars }) => {
     const res = await fetch(`${API_URL}/families/current/slideshow-settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ slideshow_mode, slideshow_interval })
+      body: JSON.stringify({ slideshow_mode, slideshow_interval, slideshow_include_avatars })
     });
     if (!res.ok) {
       const data = await res.json();

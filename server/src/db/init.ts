@@ -354,6 +354,16 @@ const runMigrations = (): void => {
     saveDatabase();
   }
 
+  // Migration: Add slideshow_include_avatars column to families
+  if (!familiesColsForSlideshow.includes('slideshow_include_avatars')) {
+    console.log('Running migration: Adding slideshow_include_avatars to families...');
+
+    db.run('ALTER TABLE families ADD COLUMN slideshow_include_avatars INTEGER DEFAULT 0');
+
+    console.log('Migration completed: slideshow_include_avatars added');
+    saveDatabase();
+  }
+
   if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
     console.log('Running migration: Clearing old filename-based profile images...');
 

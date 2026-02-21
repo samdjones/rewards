@@ -9,6 +9,7 @@ export interface Family {
   weather_location: string | null;
   slideshow_mode: string;
   slideshow_interval: number;
+  slideshow_include_avatars: number;
   created_at: string;
 }
 

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS families (
   weather_location TEXT,
   slideshow_mode TEXT DEFAULT 'off',
   slideshow_interval INTEGER DEFAULT 30,
+  slideshow_include_avatars INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

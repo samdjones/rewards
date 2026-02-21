@@ -60,6 +60,25 @@ describe('Photos API', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('should update slideshow_include_avatars', async () => {
+      const res = await request(app)
+        .put('/api/families/current/slideshow-settings')
+        .set('Cookie', cookie)
+        .send({ slideshow_include_avatars: 1 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.slideshow_include_avatars).toBe(1);
+    });
+
+    it('should reject invalid slideshow_include_avatars', async () => {
+      const res = await request(app)
+        .put('/api/families/current/slideshow-settings')
+        .set('Cookie', cookie)
+        .send({ slideshow_include_avatars: 5 });
+
+      expect(res.status).toBe(400);
+    });
   });
 
   describe('Photo CRUD', () => {

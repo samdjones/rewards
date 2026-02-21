@@ -25,6 +25,7 @@ const FamilySettingsPage = () => {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [slideshowMode, setSlideshowMode] = useState(user?.family?.slideshow_mode || 'off');
   const [slideshowInterval, setSlideshowInterval] = useState(user?.family?.slideshow_interval || 30);
+  const [slideshowIncludeAvatars, setSlideshowIncludeAvatars] = useState(0);
   const [slideshowSaveStatus, setSlideshowSaveStatus] = useState('');
   const photoInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,7 @@ const FamilySettingsPage = () => {
           if (familyData.family) {
             setSlideshowMode(familyData.family.slideshow_mode || 'off');
             setSlideshowInterval(familyData.family.slideshow_interval || 30);
+            setSlideshowIncludeAvatars(familyData.family.slideshow_include_avatars || 0);
           }
         } catch (_err) {
           // Slideshow settings are non-critical
@@ -190,10 +192,12 @@ const FamilySettingsPage = () => {
       setSlideshowSaveStatus('');
       const result = await familiesAPI.updateSlideshowSettings({
         slideshow_mode: slideshowMode,
-        slideshow_interval: slideshowInterval
+        slideshow_interval: slideshowInterval,
+        slideshow_include_avatars: slideshowIncludeAvatars
       });
       setSlideshowMode(result.slideshow_mode);
       setSlideshowInterval(result.slideshow_interval);
+      setSlideshowIncludeAvatars(result.slideshow_include_avatars);
       setSlideshowSaveStatus('Saved');
       setTimeout(() => setSlideshowSaveStatus(''), 3000);
     } catch (err) {
@@ -462,6 +466,19 @@ const FamilySettingsPage = () => {
                   onChange={(e) => setSlideshowInterval(Number(e.target.value))}
                   className={styles.settingRange}
                 />
+              </div>
+            )}
+
+            {slideshowMode !== 'off' && (
+              <div className={styles.settingRow}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={!!slideshowIncludeAvatars}
+                    onChange={(e) => setSlideshowIncludeAvatars(e.target.checked ? 1 : 0)}
+                  />
+                  Include profile pictures in slideshow
+                </label>
               </div>
             )}
 

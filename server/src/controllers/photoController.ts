@@ -89,9 +89,47 @@ export const deleteFamilyPhoto = (req: Request, res: Response): void => {
 
 export const getKioskPhotos = (req: Request, res: Response): void => {
   try {
-    const photos = db.prepare<{ id: number; image_data: string; caption: string | null }>(
+    const photos: { id: number; image_data: string; caption: string | null }[] = db.prepare<{ id: number; image_data: string; caption: string | null }>(
       'SELECT id, image_data, caption FROM family_photos WHERE family_id = ? ORDER BY sort_order ASC, created_at ASC'
     ).all(req.familyId);
+
+    // Check if avatars should be included
+    const family = db.prepare<{ slideshow_include_avatars: number }>(
+      'SELECT slideshow_include_avatars FROM families WHERE id = ?'
+    ).get(req.familyId);
+
+    if (family && family.slideshow_include_avatars) {
+      // Get user profile images from family members
+      const userAvatars = db.prepare<{ user_id: number; name: string; profile_image: string }>(
+        `SELECT u.id as user_id, u.name, u.profile_image
+         FROM users u
+         JOIN family_members fm ON fm.user_id = u.id
+         WHERE fm.family_id = ? AND u.profile_image IS NOT NULL`
+      ).all(req.familyId);
+
+      for (const avatar of userAvatars) {
+        photos.push({
+          id: -avatar.user_id,
+          image_data: avatar.profile_image,
+          caption: avatar.name,
+        });
+      }
+
+      // Get children profile images
+      const childAvatars = db.prepare<{ id: number; name: string; profile_image: string }>(
+        `SELECT id, name, profile_image
+         FROM children
+         WHERE family_id = ? AND profile_image IS NOT NULL`
+      ).all(req.familyId);
+
+      for (const avatar of childAvatars) {
+        photos.push({
+          id: -(1000 + avatar.id),
+          image_data: avatar.profile_image,
+          caption: avatar.name,
+        });
+      }
+    }
 
     res.json({ photos });
   } catch (error) {
