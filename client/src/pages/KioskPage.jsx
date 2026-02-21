@@ -38,6 +38,7 @@ const KioskPage = () => {
   const [familyName, setFamilyName] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
   const [weatherData, setWeatherData] = useState(null);
+  const [busTimesData, setBusTimesData] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showingPhoto, setShowingPhoto] = useState(false);
@@ -83,6 +84,7 @@ const KioskPage = () => {
         setFamilyName(data.family.name);
         setState('dashboard');
         kioskAPI.getWeather().then(setWeatherData).catch(() => {});
+        kioskAPI.getBusTimes().then(setBusTimesData).catch(() => {});
         loadPhotos();
       } catch (_err) {
         // Not paired yet, request a code
@@ -123,6 +125,7 @@ const KioskPage = () => {
           setDashboardData(dashData);
           setState('dashboard');
           kioskAPI.getWeather().then(setWeatherData).catch(() => {});
+          kioskAPI.getBusTimes().then(setBusTimesData).catch(() => {});
           loadPhotos();
         }
       } catch (_err) {
@@ -146,9 +149,10 @@ const KioskPage = () => {
         setDashboardData(data);
         setFamilyName(data.family.name);
         kioskAPI.getWeather().then(setWeatherData).catch(() => {});
+        kioskAPI.getBusTimes().then(setBusTimesData).catch(() => {});
 
-        // Re-fetch photos when slideshow settings change
-        const settingsKey = `${data.family?.slideshow_mode}|${data.family?.slideshow_include_avatars}`;
+        // Re-fetch photos/bus when settings change
+        const settingsKey = `${data.family?.slideshow_mode}|${data.family?.slideshow_include_avatars}|${data.family?.bus_stop_atco_code}|${data.family?.bus_route_filter}`;
         if (prevSlideshowSettingsRef.current && prevSlideshowSettingsRef.current !== settingsKey) {
           loadPhotos();
         }
@@ -426,6 +430,19 @@ const KioskPage = () => {
                 )}
               </div>
             ))}
+        </div>
+      )}
+      {busTimesData?.enabled && busTimesData.departures?.length > 0 && (
+        <div className={styles.busStrip}>
+          <span className={styles.busStopName}>{busTimesData.stop_name}</span>
+          {busTimesData.departures.map((dep, i) => (
+            <div key={i} className={styles.busDeparture}>
+              <span className={styles.busLine}>{dep.line}</span>
+              <span className={styles.busDirection}>{dep.direction}</span>
+              <span className={styles.busTime}>{dep.best_departure_estimate}</span>
+              {dep.status === 'live' && <span className={styles.busLive}>LIVE</span>}
+            </div>
+          ))}
         </div>
       )}
     </>

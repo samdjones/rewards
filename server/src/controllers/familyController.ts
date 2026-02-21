@@ -3,6 +3,7 @@ import type { Family, FamilyMember, FamilyRole } from '@rewards/shared';
 import db from '../db/wrapper.js';
 import { generateInviteCode, isValidInviteCodeFormat } from '../utils/inviteCode.js';
 import { invalidateWeatherCache } from '../utils/weather.js';
+import { invalidateBusTimesCache, getBusTimesForFamily } from '../utils/bustime.js';
 
 interface CountRow {
   count: number;
@@ -109,6 +110,13 @@ export const getCurrentFamily = (req: Request, res: Response): void => {
       profile_image: family.profile_image,
       created_at: family.created_at,
       member_count: memberCount!.count,
+      holiday_mode: family.holiday_mode,
+      weather_location: family.weather_location,
+      slideshow_mode: family.slideshow_mode,
+      slideshow_interval: family.slideshow_interval,
+      slideshow_include_avatars: family.slideshow_include_avatars,
+      bus_stop_atco_code: family.bus_stop_atco_code,
+      bus_route_filter: family.bus_route_filter,
     },
     role: req.familyRole,
   });
@@ -396,6 +404,61 @@ export const updateWeatherLocation = (req: Request, res: Response): void => {
   invalidateWeatherCache(req.familyId!);
 
   res.json({ weather_location: trimmed || null });
+};
+
+// Update bus settings (admin only)
+export const updateBusSettings = (req: Request, res: Response): void => {
+  try {
+    const { bus_stop_atco_code, bus_route_filter } = req.body;
+
+    if (bus_stop_atco_code !== undefined && typeof bus_stop_atco_code !== 'string') {
+      res.status(400).json({ error: 'bus_stop_atco_code must be a string' });
+      return;
+    }
+
+    if (bus_route_filter !== undefined && typeof bus_route_filter !== 'string') {
+      res.status(400).json({ error: 'bus_route_filter must be a string' });
+      return;
+    }
+
+    const trimmedCode = (bus_stop_atco_code ?? '').trim() || null;
+    const trimmedFilter = (bus_route_filter ?? '').trim() || null;
+
+    db.prepare('UPDATE families SET bus_stop_atco_code = ?, bus_route_filter = ? WHERE id = ?').run(
+      trimmedCode,
+      trimmedFilter,
+      req.familyId
+    );
+
+    invalidateBusTimesCache(req.familyId!);
+
+    res.json({ bus_stop_atco_code: trimmedCode, bus_route_filter: trimmedFilter });
+  } catch (error) {
+    console.error('Update bus settings error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Test bus settings (admin only)
+export const testBusSettings = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const family = db.prepare<{ bus_stop_atco_code: string | null; bus_route_filter: string | null }>(
+      'SELECT bus_stop_atco_code, bus_route_filter FROM families WHERE id = ?'
+    ).get(req.familyId);
+
+    if (!family?.bus_stop_atco_code) {
+      res.json({ ok: false, error: 'No bus stop configured' });
+      return;
+    }
+
+    invalidateBusTimesCache(req.familyId!);
+    const data = await getBusTimesForFamily(req.familyId!, family.bus_stop_atco_code, family.bus_route_filter);
+    res.json({ ok: true, stop_name: data.stop_name, departure_count: data.departures.length, departures: data.departures });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Test bus settings error:', error);
+    res.json({ ok: false, error: message });
+  }
 };
 
 // Update slideshow settings (admin only)

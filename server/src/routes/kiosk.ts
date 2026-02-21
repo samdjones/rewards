@@ -8,6 +8,7 @@ import {
   pairKiosk,
   getDashboardData,
   getWeather,
+  getBusTimes,
   getKioskSessions,
   unpairKiosk
 } from '../controllers/kioskController.js';
@@ -22,6 +23,7 @@ router.get('/status', checkStatus);
 // Requires kiosk auth - called by paired kiosk
 router.get('/dashboard', authenticateKiosk, getDashboardData);
 router.get('/weather', authenticateKiosk, getWeather);
+router.get('/bus-times', authenticateKiosk, getBusTimes);
 router.get('/photos', authenticateKiosk, getKioskPhotos);
 
 // Requires family admin - called from family settings

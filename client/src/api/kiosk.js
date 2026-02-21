@@ -68,6 +68,14 @@ export const kioskAPI = {
     return res.json();
   },
 
+  getBusTimes: async () => {
+    const res = await fetch(`${API_URL}/kiosk/bus-times`, {
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('Failed to fetch bus times');
+    return res.json();
+  },
+
   getPhotos: async () => {
     const res = await fetch(`${API_URL}/kiosk/photos`, {
       credentials: 'include'

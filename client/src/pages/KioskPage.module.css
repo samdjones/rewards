@@ -302,6 +302,66 @@
   color: #60a5fa;
 }
 
+/* Bus times strip */
+.busStrip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.busStopName {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.busDeparture {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 6px;
+}
+
+.busLine {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fbbf24;
+  min-width: 1.5rem;
+}
+
+.busDirection {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 8rem;
+}
+
+.busTime {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.busLive {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* Split view (dedicated mode) */
 .splitView {
   flex: 1;

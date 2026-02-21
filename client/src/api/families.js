@@ -190,6 +190,37 @@ export const familiesAPI = {
     return res.json();
   },
 
+  // Update bus settings (admin only)
+  updateBusSettings: async ({ bus_stop_atco_code, bus_route_filter }) => {
+    const res = await fetch(`${API_URL}/families/current/bus-settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ bus_stop_atco_code, bus_route_filter })
+    });
+    if (!res.ok) {
+      let message = `Failed to update bus settings (${res.status})`;
+      try {
+        const data = await res.json();
+        if (data.error) message = data.error;
+      } catch (_e) {
+        const text = await res.text().catch(() => '');
+        if (text) message += ': ' + text.slice(0, 100);
+      }
+      throw new Error(message);
+    }
+    return res.json();
+  },
+
+  // Test bus settings (admin only)
+  testBusSettings: async () => {
+    const res = await fetch(`${API_URL}/families/current/bus-settings/test`, {
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('Failed to test bus settings');
+    return res.json();
+  },
+
   // Set weather location (admin only)
   setWeatherLocation: async (location) => {
     const res = await fetch(`${API_URL}/families/current/weather-location`, {
