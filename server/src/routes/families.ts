@@ -14,6 +14,7 @@ import {
   regenerateInviteCode,
   toggleHolidayMode,
   updateWeatherLocation,
+  updateSlideshowSettings,
   resetFamilyHistory,
 } from '../controllers/familyController.js';
 
@@ -43,6 +44,9 @@ router.post('/current/holiday-mode', requireFamilyAdmin, toggleHolidayMode);
 
 // Weather location
 router.put('/current/weather-location', requireFamilyAdmin, updateWeatherLocation);
+
+// Slideshow settings
+router.put('/current/slideshow-settings', requireFamilyAdmin, updateSlideshowSettings);
 
 // Reset history
 router.post('/current/reset-history', requireFamilyAdmin, resetFamilyHistory);

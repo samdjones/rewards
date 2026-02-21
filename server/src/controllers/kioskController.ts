@@ -134,8 +134,8 @@ export const getDashboardData = (req: Request, res: Response): void => {
     const familyId = req.familyId;
     const today = new Date().toISOString().split('T')[0];
 
-    const family = db.prepare<{ name: string; profile_image: string | null; holiday_mode: number }>(
-      'SELECT name, profile_image, holiday_mode FROM families WHERE id = ?'
+    const family = db.prepare<{ name: string; profile_image: string | null; holiday_mode: number; slideshow_mode: string; slideshow_interval: number; slideshow_include_avatars: number }>(
+      'SELECT name, profile_image, holiday_mode, slideshow_mode, slideshow_interval, slideshow_include_avatars FROM families WHERE id = ?'
     ).get(familyId);
 
     const children = db.prepare<Record<string, unknown>>(

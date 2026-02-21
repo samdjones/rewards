@@ -312,6 +312,58 @@ const runMigrations = (): void => {
     saveDatabase();
   }
 
+  // Migration: Add family_photos table and slideshow columns
+  const familyPhotosTableCheck = db.exec(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='family_photos'"
+  );
+  if (familyPhotosTableCheck.length === 0) {
+    console.log('Running migration: Adding family_photos table...');
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS family_photos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        family_id INTEGER NOT NULL,
+        uploaded_by INTEGER NOT NULL,
+        image_data TEXT NOT NULL,
+        caption TEXT,
+        sort_order INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
+        FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+
+    console.log('Migration completed: family_photos table added');
+    saveDatabase();
+  }
+
+  // Migration: Add slideshow columns to families
+  const familiesInfoForSlideshow = db.exec('PRAGMA table_info(families)');
+  const familiesColsForSlideshow =
+    familiesInfoForSlideshow.length > 0
+      ? familiesInfoForSlideshow[0].values.map((row: (string | number | Uint8Array | null)[]) => row[1] as string)
+      : [];
+
+  if (!familiesColsForSlideshow.includes('slideshow_mode')) {
+    console.log('Running migration: Adding slideshow columns to families...');
+
+    db.run("ALTER TABLE families ADD COLUMN slideshow_mode TEXT DEFAULT 'off'");
+    db.run('ALTER TABLE families ADD COLUMN slideshow_interval INTEGER DEFAULT 30');
+
+    console.log('Migration completed: slideshow columns added');
+    saveDatabase();
+  }
+
+  // Migration: Add slideshow_include_avatars column to families
+  if (!familiesColsForSlideshow.includes('slideshow_include_avatars')) {
+    console.log('Running migration: Adding slideshow_include_avatars to families...');
+
+    db.run('ALTER TABLE families ADD COLUMN slideshow_include_avatars INTEGER DEFAULT 0');
+
+    console.log('Migration completed: slideshow_include_avatars added');
+    saveDatabase();
+  }
+
   if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
     console.log('Running migration: Clearing old filename-based profile images...');
 

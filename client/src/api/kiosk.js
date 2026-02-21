@@ -66,5 +66,13 @@ export const kioskAPI = {
     });
     if (!res.ok) throw new Error('Failed to fetch weather data');
     return res.json();
+  },
+
+  getPhotos: async () => {
+    const res = await fetch(`${API_URL}/kiosk/photos`, {
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('Failed to fetch photos');
+    return res.json();
   }
 };

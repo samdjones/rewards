@@ -80,5 +80,44 @@ export const uploadsAPI = {
       throw new Error(data.error || 'Failed to remove image');
     }
     return res.json();
+  },
+
+  uploadFamilyPhoto: async (file, caption) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    if (caption) formData.append('caption', caption);
+    const res = await fetch(`${API_URL}/uploads/families/current/photos`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to upload photo');
+    }
+    return res.json();
+  },
+
+  getFamilyPhotos: async () => {
+    const res = await fetch(`${API_URL}/uploads/families/current/photos`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to get photos');
+    }
+    return res.json();
+  },
+
+  deleteFamilyPhoto: async (id) => {
+    const res = await fetch(`${API_URL}/uploads/families/current/photos/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to delete photo');
+    }
+    return res.json();
   }
 };

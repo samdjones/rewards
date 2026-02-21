@@ -21,6 +21,13 @@ const FamilySettingsPage = () => {
   const [holidayMode, setHolidayMode] = useState(user?.family?.holiday_mode || 0);
   const [weatherLocation, setWeatherLocation] = useState(user?.family?.weather_location || '');
   const [weatherSaveStatus, setWeatherSaveStatus] = useState('');
+  const [photos, setPhotos] = useState([]);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [slideshowMode, setSlideshowMode] = useState(user?.family?.slideshow_mode || 'off');
+  const [slideshowInterval, setSlideshowInterval] = useState(user?.family?.slideshow_interval || 30);
+  const [slideshowIncludeAvatars, setSlideshowIncludeAvatars] = useState(0);
+  const [slideshowSaveStatus, setSlideshowSaveStatus] = useState('');
+  const photoInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -40,6 +47,24 @@ const FamilySettingsPage = () => {
           setKioskSessions(sessions);
         } catch (_err) {
           // Kiosk sessions are non-critical
+        }
+
+        try {
+          const photosData = await uploadsAPI.getFamilyPhotos();
+          setPhotos(photosData.photos);
+        } catch (_err) {
+          // Photos are non-critical
+        }
+
+        try {
+          const familyData = await familiesAPI.getCurrent();
+          if (familyData.family) {
+            setSlideshowMode(familyData.family.slideshow_mode || 'off');
+            setSlideshowInterval(familyData.family.slideshow_interval || 30);
+            setSlideshowIncludeAvatars(familyData.family.slideshow_include_avatars || 0);
+          }
+        } catch (_err) {
+          // Slideshow settings are non-critical
         }
       }
     } catch (err) {
@@ -117,6 +142,66 @@ const FamilySettingsPage = () => {
       setTimeout(() => setWeatherSaveStatus(''), 3000);
     } catch (err) {
       setWeatherSaveStatus('Error: ' + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only JPEG, PNG, and WebP images are allowed');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File too large. Maximum size is 5MB.');
+      return;
+    }
+
+    try {
+      setPhotoUploading(true);
+      setError('');
+      const data = await uploadsAPI.uploadFamilyPhoto(file);
+      setPhotos(prev => [...prev, data.photo]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeletePhoto = async (photoId) => {
+    if (!confirm('Delete this photo?')) return;
+
+    try {
+      setError('');
+      await uploadsAPI.deleteFamilyPhoto(photoId);
+      setPhotos(prev => prev.filter(p => p.id !== photoId));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSaveSlideshowSettings = async () => {
+    try {
+      setActionLoading(true);
+      setSlideshowSaveStatus('');
+      const result = await familiesAPI.updateSlideshowSettings({
+        slideshow_mode: slideshowMode,
+        slideshow_interval: slideshowInterval,
+        slideshow_include_avatars: slideshowIncludeAvatars
+      });
+      setSlideshowMode(result.slideshow_mode);
+      setSlideshowInterval(result.slideshow_interval);
+      setSlideshowIncludeAvatars(result.slideshow_include_avatars);
+      setSlideshowSaveStatus('Saved');
+      setTimeout(() => setSlideshowSaveStatus(''), 3000);
+    } catch (err) {
+      setSlideshowSaveStatus('Error: ' + err.message);
     } finally {
       setActionLoading(false);
     }
@@ -341,6 +426,111 @@ const FamilySettingsPage = () => {
             <p className={weatherSaveStatus.startsWith('Error') ? styles.error : styles.successMsg}>
               {weatherSaveStatus}
             </p>
+          )}
+        </section>
+      )}
+
+      {/* Picture Frame Section (Admin Only) */}
+      {isAdmin && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Picture Frame</h2>
+          <p className={styles.sectionDescription}>
+            Display family photos on the kiosk as a slideshow.
+          </p>
+
+          <div className={styles.slideshowSettings}>
+            <div className={styles.settingRow}>
+              <label className={styles.settingLabel}>Display mode</label>
+              <select
+                value={slideshowMode}
+                onChange={(e) => setSlideshowMode(e.target.value)}
+                className={styles.settingSelect}
+              >
+                <option value="off">Off</option>
+                <option value="dedicated">Side panel</option>
+                <option value="fullscreen">Full-screen alternating</option>
+              </select>
+            </div>
+
+            {slideshowMode !== 'off' && (
+              <div className={styles.settingRow}>
+                <label className={styles.settingLabel}>
+                  Shuffle interval: {slideshowInterval}s
+                </label>
+                <input
+                  type="range"
+                  min="5"
+                  max="300"
+                  step="5"
+                  value={slideshowInterval}
+                  onChange={(e) => setSlideshowInterval(Number(e.target.value))}
+                  className={styles.settingRange}
+                />
+              </div>
+            )}
+
+            {slideshowMode !== 'off' && (
+              <div className={styles.settingRow}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={!!slideshowIncludeAvatars}
+                    onChange={(e) => setSlideshowIncludeAvatars(e.target.checked ? 1 : 0)}
+                  />
+                  Include profile pictures in slideshow
+                </label>
+              </div>
+            )}
+
+            <div className={styles.settingRow}>
+              <button
+                onClick={handleSaveSlideshowSettings}
+                className={styles.btnSecondary}
+                disabled={actionLoading}
+              >
+                Save Settings
+              </button>
+              {slideshowSaveStatus && (
+                <span className={slideshowSaveStatus.startsWith('Error') ? styles.error : styles.successMsg}>
+                  {slideshowSaveStatus}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.photoUploadRow}>
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              className={styles.btnSecondary}
+              disabled={photoUploading || photos.length >= 20}
+            >
+              {photoUploading ? 'Uploading...' : 'Add Photo'}
+            </button>
+            <span className={styles.photoCount}>{photos.length}/20 photos</span>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoUpload}
+              className={styles.hiddenInput}
+            />
+          </div>
+
+          {photos.length > 0 && (
+            <div className={styles.photoGrid}>
+              {photos.map(photo => (
+                <div key={photo.id} className={styles.photoItem}>
+                  <img src={photo.image_data} alt={photo.caption || 'Family photo'} className={styles.photoThumb} />
+                  <button
+                    onClick={() => handleDeletePhoto(photo.id)}
+                    className={styles.photoDeleteBtn}
+                    title="Delete photo"
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </section>
       )}

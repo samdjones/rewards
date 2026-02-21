@@ -398,6 +398,61 @@ export const updateWeatherLocation = (req: Request, res: Response): void => {
   res.json({ weather_location: trimmed || null });
 };
 
+// Update slideshow settings (admin only)
+export const updateSlideshowSettings = (req: Request, res: Response): void => {
+  try {
+    const { slideshow_mode, slideshow_interval, slideshow_include_avatars } = req.body;
+
+    if (slideshow_mode !== undefined) {
+      if (!['off', 'dedicated', 'fullscreen'].includes(slideshow_mode)) {
+        res.status(400).json({ error: 'slideshow_mode must be off, dedicated, or fullscreen' });
+        return;
+      }
+    }
+
+    if (slideshow_interval !== undefined) {
+      const interval = Number(slideshow_interval);
+      if (isNaN(interval) || interval < 5 || interval > 300) {
+        res.status(400).json({ error: 'slideshow_interval must be between 5 and 300' });
+        return;
+      }
+    }
+
+    if (slideshow_include_avatars !== undefined) {
+      if (![0, 1].includes(Number(slideshow_include_avatars))) {
+        res.status(400).json({ error: 'slideshow_include_avatars must be 0 or 1' });
+        return;
+      }
+    }
+
+    if (slideshow_mode !== undefined) {
+      db.prepare('UPDATE families SET slideshow_mode = ? WHERE id = ?').run(slideshow_mode, req.familyId);
+    }
+    if (slideshow_interval !== undefined) {
+      db.prepare('UPDATE families SET slideshow_interval = ? WHERE id = ?').run(
+        Number(slideshow_interval),
+        req.familyId
+      );
+    }
+    if (slideshow_include_avatars !== undefined) {
+      db.prepare('UPDATE families SET slideshow_include_avatars = ? WHERE id = ?').run(
+        Number(slideshow_include_avatars),
+        req.familyId
+      );
+    }
+
+    const family = db.prepare<Family>('SELECT * FROM families WHERE id = ?').get(req.familyId);
+    res.json({
+      slideshow_mode: family!.slideshow_mode,
+      slideshow_interval: family!.slideshow_interval,
+      slideshow_include_avatars: family!.slideshow_include_avatars,
+    });
+  } catch (error) {
+    console.error('Update slideshow settings error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 // Reset all history (admin only) - clears completions, redemptions, adjustments, and resets points
 export const resetFamilyHistory = (req: Request, res: Response): void => {
   try {

@@ -4,6 +4,7 @@ import { childrenAPI } from '../api/children';
 import { rewardsAPI } from '../api/rewards';
 import { tasksAPI } from '../api/tasks';
 import { familiesAPI } from '../api/families';
+import { uploadsAPI } from '../api/uploads';
 import Avatar from '../components/Avatar';
 import RedeemModal from '../components/RedeemModal';
 import DeductModal from '../components/DeductModal';
@@ -20,6 +21,8 @@ const Dashboard = () => {
   const [redeemChild, setRedeemChild] = useState(null);
   const [deductChild, setDeductChild] = useState(null);
   const [holidayMode, setHolidayMode] = useState(user?.family?.holiday_mode || 0);
+  const [photos, setPhotos] = useState([]);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
@@ -70,7 +73,23 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadData();
+    // Load photos for the widget
+    uploadsAPI.getFamilyPhotos()
+      .then(data => setPhotos(data.photos || []))
+      .catch(() => {});
   }, [loadData]);
+
+  // Photo cycling for dashboard widget
+  useEffect(() => {
+    const slideshowMode = user?.family?.slideshow_mode;
+    if (!slideshowMode || slideshowMode === 'off' || photos.length <= 1) return;
+
+    const interval = (user?.family?.slideshow_interval || 30) * 1000;
+    const timer = setInterval(() => {
+      setCurrentPhotoIndex(i => (i + 1) % photos.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [photos.length, user?.family?.slideshow_mode, user?.family?.slideshow_interval]);
 
   useEffect(() => {
     if (tasks.length > 0) {
@@ -249,6 +268,16 @@ const Dashboard = () => {
           Today
         </button>
       </div>
+
+      {photos.length > 0 && user?.family?.slideshow_mode && user.family.slideshow_mode !== 'off' && (
+        <div className={styles.photoWidget}>
+          <img
+            src={photos[currentPhotoIndex % photos.length]?.image_data}
+            alt="Family photo"
+            className={styles.photoWidgetImage}
+          />
+        </div>
+      )}
 
       <div className={styles.currentDate}>
         {formatDateDisplay(selectedDate)}
