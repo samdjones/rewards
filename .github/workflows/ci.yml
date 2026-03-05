@@ -86,7 +86,7 @@ jobs:
         run: podman save rewards-app:ci -o rewards-app.tar
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.34.0
+        uses: aquasecurity/trivy-action@0.34.2
         with:
           input: 'rewards-app.tar'
           format: 'table'
