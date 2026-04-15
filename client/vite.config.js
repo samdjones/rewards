@@ -12,9 +12,11 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true,
+    allowedHosts: ['lister.taila06ba4.ts.net'],
     proxy: {
       '/api': {
-        target: 'https://localhost:3000',
+        target: 'https://localhost:3001',
         changeOrigin: true,
         secure: false
       }

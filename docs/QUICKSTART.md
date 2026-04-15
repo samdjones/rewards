@@ -36,7 +36,7 @@ npm run server
 You should see:
 ```
 Database loaded successfully
-Server running on http://localhost:3000
+Server running on https://localhost:3001
 ```
 
 ### Terminal 2: Start the Frontend
@@ -108,11 +108,13 @@ cd client && npm run dev
 
 ### Port Already in Use
 
-If port 3000 or 5173 is already in use:
+If port 3001 or 5173 is already in use:
 
-**Backend (port 3000)**: Edit `server/.env` and change PORT=3000 to another port
+**Backend (port 3001)**: Edit `server/.env` and change `PORT=3001` to another port, then update the proxy target in `client/vite.config.js` to match
 
-**Frontend (port 5173)**: Edit `client/vite.config.js` and change the server port
+**Frontend (port 5173)**: Edit `client/vite.config.js` and change the `server.port` value
+
+> Note: The production server runs on port 3000. The dev server uses port 3001 by default to avoid conflicts.
 
 ### Database Issues
 

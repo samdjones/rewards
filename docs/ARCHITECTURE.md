@@ -28,7 +28,7 @@
                             │ HTTP/JSON + Cookies
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│           TypeScript Express Backend (Port 3000)                 │
+│      TypeScript Express Backend (Port 3001 dev / 3000 prod)      │
 │  ┌────────────────────────────────────────────────────────────┐ │
 │  │                     Middleware                              │ │
 │  │  - CORS                                                     │ │
