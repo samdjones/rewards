@@ -85,6 +85,10 @@ export default tseslint.config(
     rules: {
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
+      // New strict rules added in eslint-plugin-react-hooks@7.1.1 — warn until
+      // existing code is refactored to comply.
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/immutability": "warn",
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "react/no-unescaped-entities": "off",
