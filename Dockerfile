@@ -5,7 +5,7 @@ ARG APP_VERSION=unknown
 WORKDIR /app
 
 # Copy package files for all workspaces
-COPY package*.json ./
+COPY package*.json .npmrc ./
 COPY server/package*.json ./server/
 COPY client/package*.json ./client/
 COPY packages/shared/package*.json ./packages/shared/
