@@ -21,17 +21,6 @@ const GTFS_URL =
 const HORIZON_DAYS = Number(process.env.BUS_HORIZON_DAYS) || 8;
 const TIMEZONE = process.env.BUS_TIMEZONE || 'Europe/London';
 
-// GTFS files we actually need — everything else in the zip (notably the huge
-// shapes.txt) is skipped without being decompressed.
-const WANTED = new Set([
-  'stops.txt',
-  'stop_times.txt',
-  'trips.txt',
-  'routes.txt',
-  'calendar.txt',
-  'calendar_dates.txt',
-]);
-
 let refreshing = false;
 
 // Distinct, non-empty ATCO codes configured across all families.
@@ -101,6 +90,8 @@ const collectFromZip = async (
   const g = emptyGtfsCollected();
   const DAY_COLS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
+  // Only the files below are decompressed; streamZipCsv skips every other entry
+  // in the zip (notably the huge shapes.txt) without reading it.
   await streamZipCsv(zipPath, {
     'stops.txt': (r) => {
       if (atcoSet.has(r.stop_id)) g.stopNames.set(r.stop_id, r.stop_name);
