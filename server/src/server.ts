@@ -5,10 +5,12 @@ import path from 'path';
 import { generate } from 'selfsigned';
 import { initDatabase } from './db/init.js';
 import { createApp } from './app.js';
+import { refreshBusData, refreshBusDataIfStale } from './utils/busIngest.js';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
+const BUS_REFRESH_INTERVAL_HOURS = Number(process.env.BUS_REFRESH_INTERVAL_HOURS) || 24;
 const CERT_DIR = process.env.CERT_DIR || '.';
 const KEY_PATH = path.join(CERT_DIR, 'server.key');
 const CERT_PATH = path.join(CERT_DIR, 'server.cert');
@@ -42,3 +44,14 @@ const options = {
 https.createServer(options, app).listen(PORT, () => {
   console.log(`Server running on https://localhost:${PORT}`);
 });
+
+// Build/refresh the bus timetable index in the background. Runs once on
+// startup if the local index is stale, then on a fixed interval. Failures are
+// logged but never crash the server.
+refreshBusDataIfStale().catch((err) => console.error('Initial bus refresh failed:', err));
+setInterval(
+  () => {
+    refreshBusData().catch((err) => console.error('Scheduled bus refresh failed:', err));
+  },
+  BUS_REFRESH_INTERVAL_HOURS * 60 * 60 * 1000
+).unref();

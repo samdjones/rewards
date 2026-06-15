@@ -214,6 +214,36 @@ rewards/
 └────────────────┘ └────────────────┘           └────────────────┘
 ```
 
+### Standalone tables
+
+Not all tables hang off `families`. The bus timetable index is a denormalised
+cache, keyed by stop rather than family:
+
+- **`bus_stops`** — cached stop metadata (`atco_code`, `stop_name`, `refreshed_at`).
+- **`bus_departures`** — pre-computed scheduled departures (`atco_code`,
+  `service_date`, `departure_time`, `line`, `direction`), indexed on
+  `(atco_code, service_date, departure_time)` for fast "next departures" lookups.
+
+## Background Jobs
+
+### Bus timetable ingest
+
+The kiosk's bus departures come from the free UK Bus Open Data Service (BODS)
+GTFS feed rather than a paid per-request API. `server/src/utils/busIngest.ts`:
+
+1. Runs on startup (if the index is stale) and on a fixed interval
+   (`BUS_REFRESH_INTERVAL_HOURS`, default 24h).
+2. Downloads the regional GTFS zip and **streams** it with `yauzl`, parsing only
+   the entries it needs (`stops`, `stop_times`, `trips`, `routes`, `calendar`,
+   `calendar_dates`) and skipping the large `shapes.txt`.
+3. Expands the timetable for the configured stop(s) over a rolling horizon
+   (`BUS_HORIZON_DAYS`) into the `bus_departures` index, applying GTFS calendar
+   rules and normalising post-midnight (`24:00`+) times.
+
+Pure parsing/expansion logic lives in `server/src/utils/gtfs.ts` (unit tested);
+reads happen in `server/src/utils/bustime.ts` against the local index. If no
+family has configured a stop, the download is skipped entirely.
+
 ## Family-Based Data Isolation
 
 All data queries are scoped by `family_id`:

@@ -137,6 +137,25 @@ CREATE TABLE IF NOT EXISTS kiosk_sessions (
   FOREIGN KEY (paired_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Bus Stops Table (cached stop metadata from the BODS GTFS feed)
+CREATE TABLE IF NOT EXISTS bus_stops (
+  atco_code TEXT PRIMARY KEY,
+  stop_name TEXT,
+  refreshed_at DATETIME
+);
+
+-- Bus Departures Table (pre-computed scheduled departures from BODS GTFS)
+CREATE TABLE IF NOT EXISTS bus_departures (
+  atco_code TEXT NOT NULL,
+  service_date TEXT NOT NULL,    -- YYYYMMDD (real wall-clock date)
+  departure_time TEXT NOT NULL,  -- HH:MM (24h, real wall-clock time)
+  line TEXT NOT NULL,
+  direction TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_bus_departures_lookup
+  ON bus_departures (atco_code, service_date, departure_time);
+
 -- Point Adjustments Table
 CREATE TABLE IF NOT EXISTS point_adjustments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

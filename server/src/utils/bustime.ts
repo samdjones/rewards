@@ -1,3 +1,6 @@
+import db from '../db/wrapper.js';
+import { nowInZone } from './gtfs.js';
+
 interface BusDeparture {
   line: string;
   direction: string;
@@ -12,13 +15,19 @@ interface BusTimesCache {
   fetchedAt: number;
 }
 
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+const CACHE_TTL_MS = 30 * 1000; // 30 seconds
+const TIMEZONE = process.env.BUS_TIMEZONE || 'Europe/London';
+const MAX_DEPARTURES = 6;
+
 const busTimesCache = new Map<number, BusTimesCache>();
 
 export const invalidateBusTimesCache = (familyId: number): void => {
   busTimesCache.delete(familyId);
 };
 
+// Read upcoming departures for a stop from the locally-built BODS index.
+// Scheduled-only: best_departure_estimate mirrors the aimed time and status
+// is always "scheduled" (no live vehicle tracking).
 export const getBusTimesForFamily = async (
   familyId: number,
   atcoCode: string,
@@ -29,66 +38,45 @@ export const getBusTimesForFamily = async (
     return { stop_name: cached.stop_name, departures: cached.departures };
   }
 
-  const appId = process.env.TRANSPORT_API_APP_ID;
-  const appKey = process.env.TRANSPORT_API_APP_KEY;
+  const stopRow = db
+    .prepare<{ stop_name: string }>('SELECT stop_name FROM bus_stops WHERE atco_code = ?')
+    .get(atcoCode);
+  const stopName = stopRow?.stop_name || atcoCode;
 
-  if (!appId || !appKey) {
-    throw new Error('TransportAPI credentials not configured');
+  const { ymd, hhmm } = nowInZone(TIMEZONE);
+
+  const routes = (routeFilter ?? '')
+    .split(',')
+    .map((r) => r.trim().toLowerCase())
+    .filter(Boolean);
+
+  // Upcoming = later today, or any future day in the index. Crossing midnight
+  // is handled naturally by ordering on (service_date, departure_time).
+  let sql =
+    `SELECT line, direction, departure_time FROM bus_departures ` +
+    `WHERE atco_code = ? AND (service_date > ? OR (service_date = ? AND departure_time >= ?))`;
+  const params: (string | number)[] = [atcoCode, ymd, ymd, hhmm];
+
+  if (routes.length) {
+    sql += ` AND LOWER(line) IN (${routes.map(() => '?').join(',')})`;
+    params.push(...routes);
   }
 
-  const url =
-    `https://transportapi.com/v3/uk/bus/stop/${encodeURIComponent(atcoCode)}/live.json` +
-    `?app_id=${encodeURIComponent(appId)}&app_key=${encodeURIComponent(appKey)}` +
-    `&group=route&nextbuses=yes`;
+  sql += ` ORDER BY service_date, departure_time LIMIT ?`;
+  params.push(MAX_DEPARTURES);
 
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`TransportAPI request failed: ${res.status}`);
-  }
+  const rows = db
+    .prepare<{ line: string; direction: string; departure_time: string }>(sql)
+    .all(...params);
 
-  const data = await res.json() as {
-    stop_name?: string;
-    departures?: Record<string, Array<{
-      line: string;
-      direction: string;
-      aimed_departure_time: string;
-      best_departure_estimate: string;
-      status?: string;
-    }>>;
-  };
+  const departures: BusDeparture[] = rows.map((r) => ({
+    line: r.line,
+    direction: r.direction,
+    aimed_departure_time: r.departure_time,
+    best_departure_estimate: r.departure_time,
+    status: 'scheduled',
+  }));
 
-  const stopName = data.stop_name || atcoCode;
-
-  // Flatten departures from all routes
-  let allDepartures: BusDeparture[] = [];
-  if (data.departures) {
-    for (const routeDeps of Object.values(data.departures)) {
-      for (const dep of routeDeps) {
-        allDepartures.push({
-          line: dep.line,
-          direction: dep.direction,
-          aimed_departure_time: dep.aimed_departure_time,
-          best_departure_estimate: dep.best_departure_estimate,
-          status: dep.status || 'scheduled',
-        });
-      }
-    }
-  }
-
-  // Filter by route if set
-  if (routeFilter) {
-    const routes = routeFilter.split(',').map(r => r.trim().toLowerCase());
-    allDepartures = allDepartures.filter(d => routes.includes(d.line.toLowerCase()));
-  }
-
-  // Sort by best_departure_estimate time
-  allDepartures.sort((a, b) => a.best_departure_estimate.localeCompare(b.best_departure_estimate));
-
-  // Limit to 6 departures
-  const departures = allDepartures.slice(0, 6);
-
-  const result: BusTimesCache = { stop_name: stopName, departures, fetchedAt: Date.now() };
-  busTimesCache.set(familyId, result);
-
+  busTimesCache.set(familyId, { stop_name: stopName, departures, fetchedAt: Date.now() });
   return { stop_name: stopName, departures };
 };
