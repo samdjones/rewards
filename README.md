@@ -11,6 +11,8 @@ A web-based application that helps families manage tasks, points, and rewards fo
 - **Reward Catalog**: Define rewards with point costs and redeem them for children
 - **Activity Tracking**: View complete history of tasks completed, rewards redeemed, and point adjustments
 - **Visual Progress**: Charts showing points earned over time and achievement badges
+- **Kiosk Display**: Pair a wall/fridge display showing tasks, photos, weather, and live UK bus departures
+- **UK Bus Timetable**: Next scheduled departures for a chosen stop, sourced free from the Bus Open Data Service (no API key, no per-call cost)
 - **Responsive Design**: Works on desktop and mobile devices
 
 ## Tech Stack
@@ -108,6 +110,40 @@ podman-compose down
 podman-compose build --no-cache
 podman-compose up -d
 ```
+
+## Bus Timetable (UK Bus Open Data Service)
+
+The kiosk display can show the next scheduled bus departures for a chosen stop. This
+uses the government's free [Bus Open Data Service (BODS)](https://data.bus-data.dft.gov.uk/)
+GTFS feed — **no API key and no per-call cost**.
+
+### How it works
+
+1. A family configures a stop's **ATCO code** (and optionally a comma-separated route
+   filter, e.g. `5,5A`) in Family Settings. You can find a stop's ATCO code on
+   [bustimes.org](https://bustimes.org) — it appears in the stop page URL.
+2. On startup (and on a daily interval), the server downloads the regional GTFS feed,
+   extracts only the departures for the configured stop(s), and stores them in a small
+   local `bus_departures` index. Changing a stop triggers an immediate rebuild.
+3. The kiosk reads upcoming departures straight from that local index — fast, offline,
+   and free.
+
+Departures are **scheduled times only** (no live vehicle tracking / "due" estimates).
+
+### Configuration
+
+All optional — sensible defaults are used. See `server/.env.example`.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `BODS_GTFS_URL` | South East England feed | Regional GTFS feed URL. Change the region segment to match your stop, e.g. `.../gtfs-file/london/`. |
+| `BUS_HORIZON_DAYS` | `8` | Days of departures to pre-compute into the index. |
+| `BUS_REFRESH_INTERVAL_HOURS` | `24` | How often to rebuild the index from the feed. |
+| `BUS_TIMEZONE` | `Europe/London` | IANA timezone used to interpret schedule times and "now". |
+
+> **Migrating from TransportAPI:** the previous implementation used the paid TransportAPI
+> live-departures endpoint (`TRANSPORT_API_APP_ID` / `TRANSPORT_API_APP_KEY`). Those
+> variables are no longer used and can be removed.
 
 ## Development Setup
 

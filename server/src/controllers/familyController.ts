@@ -4,6 +4,7 @@ import db from '../db/wrapper.js';
 import { generateInviteCode, isValidInviteCodeFormat } from '../utils/inviteCode.js';
 import { invalidateWeatherCache } from '../utils/weather.js';
 import { invalidateBusTimesCache, getBusTimesForFamily } from '../utils/bustime.js';
+import { refreshBusData } from '../utils/busIngest.js';
 
 interface CountRow {
   count: number;
@@ -432,6 +433,12 @@ export const updateBusSettings = (req: Request, res: Response): void => {
 
     invalidateBusTimesCache(req.familyId!);
 
+    // Rebuild the timetable index in the background so a newly-configured stop
+    // populates without waiting for the scheduled refresh. Fire-and-forget.
+    if (trimmedCode) {
+      refreshBusData().catch((err) => console.error('Bus refresh after settings update failed:', err));
+    }
+
     res.json({ bus_stop_atco_code: trimmedCode, bus_route_filter: trimmedFilter });
   } catch (error) {
     console.error('Update bus settings error:', error);
@@ -453,6 +460,16 @@ export const testBusSettings = async (req: Request, res: Response): Promise<void
 
     invalidateBusTimesCache(req.familyId!);
     const data = await getBusTimesForFamily(req.familyId!, family.bus_stop_atco_code, family.bus_route_filter);
+    if (data.departures.length === 0) {
+      res.json({
+        ok: true,
+        stop_name: data.stop_name,
+        departure_count: 0,
+        departures: [],
+        note: 'No upcoming departures found. If you just changed this stop, the timetable index may still be building — try again in a minute. Otherwise check the ATCO code and route filter.',
+      });
+      return;
+    }
     res.json({ ok: true, stop_name: data.stop_name, departure_count: data.departures.length, departures: data.departures });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

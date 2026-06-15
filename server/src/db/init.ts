@@ -381,6 +381,37 @@ const runMigrations = (): void => {
     saveDatabase();
   }
 
+  // Migration: Add bus timetable index tables (BODS GTFS)
+  const busTablesCheck = db.exec(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='bus_departures'"
+  );
+  if (busTablesCheck.length === 0) {
+    console.log('Running migration: Adding bus timetable index tables...');
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS bus_stops (
+        atco_code TEXT PRIMARY KEY,
+        stop_name TEXT,
+        refreshed_at DATETIME
+      )
+    `);
+    db.run(`
+      CREATE TABLE IF NOT EXISTS bus_departures (
+        atco_code TEXT NOT NULL,
+        service_date TEXT NOT NULL,
+        departure_time TEXT NOT NULL,
+        line TEXT NOT NULL,
+        direction TEXT
+      )
+    `);
+    db.run(
+      'CREATE INDEX IF NOT EXISTS idx_bus_departures_lookup ON bus_departures (atco_code, service_date, departure_time)'
+    );
+
+    console.log('Migration completed: bus timetable index tables added');
+    saveDatabase();
+  }
+
   if (oldUserCount > 0 || oldChildCount > 0 || oldFamilyCount > 0) {
     console.log('Running migration: Clearing old filename-based profile images...');
 
