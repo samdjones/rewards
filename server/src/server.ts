@@ -29,11 +29,11 @@ async function ensureCertificates() {
       .map((h) => h.trim())
       .filter(Boolean);
     const altNames = [
-      { type: 2, value: 'localhost' },
-      { type: 7, ip: '127.0.0.1' },
-      ...extraHosts.map((h) => ({ type: 2, value: h })),
+      { type: 2 as const, value: 'localhost' },
+      { type: 7 as const, ip: '127.0.0.1' },
+      ...extraHosts.map((h) => ({ type: 2 as const, value: h })),
     ];
-    const extensions = [{ name: 'subjectAltName', altNames }];
+    const extensions = [{ name: 'subjectAltName' as const, altNames }];
 
     const pems = await generate(attrs, { notAfterDate, extensions });
     fs.mkdirSync(CERT_DIR, { recursive: true });
