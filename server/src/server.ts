@@ -23,15 +23,18 @@ async function ensureCertificates() {
     const notAfterDate = new Date();
     notAfterDate.setFullYear(notAfterDate.getFullYear() + 1);
 
-    // Extra hostnames (e.g. Tailscale machine name) via SERVER_HOSTNAMES=host1,host2
-    const extraHosts = (process.env.SERVER_HOSTNAMES || '')
+    // Extra hostnames/IPs (e.g. Tailscale name/FQDN/IP) via SERVER_HOSTNAMES=host1,host2,::1
+    const extras = (process.env.SERVER_HOSTNAMES || '')
       .split(',')
       .map((h) => h.trim())
       .filter(Boolean);
+    const isIp = (s: string) => /^[\d.]+$/.test(s) || s.includes(':');
     const altNames = [
       { type: 2 as const, value: 'localhost' },
       { type: 7 as const, ip: '127.0.0.1' },
-      ...extraHosts.map((h) => ({ type: 2 as const, value: h })),
+      ...extras.map((h) =>
+        isIp(h) ? { type: 7 as const, ip: h } : { type: 2 as const, value: h }
+      ),
     ];
     const extensions = [{ name: 'subjectAltName' as const, altNames }];
 
