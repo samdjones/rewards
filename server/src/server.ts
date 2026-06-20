@@ -22,7 +22,20 @@ async function ensureCertificates() {
     const attrs = [{ name: 'commonName', value: 'localhost' }];
     const notAfterDate = new Date();
     notAfterDate.setFullYear(notAfterDate.getFullYear() + 1);
-    const pems = await generate(attrs, { notAfterDate });
+
+    // Extra hostnames (e.g. Tailscale machine name) via SERVER_HOSTNAMES=host1,host2
+    const extraHosts = (process.env.SERVER_HOSTNAMES || '')
+      .split(',')
+      .map((h) => h.trim())
+      .filter(Boolean);
+    const altNames = [
+      { type: 2 as const, value: 'localhost' },
+      { type: 7 as const, ip: '127.0.0.1' },
+      ...extraHosts.map((h) => ({ type: 2 as const, value: h })),
+    ];
+    const extensions = [{ name: 'subjectAltName' as const, altNames }];
+
+    const pems = await generate(attrs, { notAfterDate, extensions });
     fs.mkdirSync(CERT_DIR, { recursive: true });
     fs.writeFileSync(KEY_PATH, pems.private);
     fs.writeFileSync(CERT_PATH, pems.cert);
