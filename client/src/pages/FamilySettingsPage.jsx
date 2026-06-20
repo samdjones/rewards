@@ -480,7 +480,7 @@ const FamilySettingsPage = () => {
               type="text"
               value={busStopCode}
               onChange={(e) => setBusStopCode(e.target.value)}
-              placeholder="ATCO code (e.g. 149000006928)"
+              placeholder="ATCO code (e.g. 149000006265)"
               className={styles.kioskInput}
             />
           </div>
