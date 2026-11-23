@@ -84,6 +84,11 @@ export const createApp = (): Express => {
 
   // Serve static files in production
   const publicPath = path.join(__dirname, 'public');
+  // The service worker must always be revalidated so updates roll out promptly.
+  app.get('/sw.js', (_req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(publicPath, 'sw.js'));
+  });
   app.use(express.static(publicPath));
 
   // SPA fallback - serve index.html for non-API routes
