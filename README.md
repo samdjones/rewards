@@ -111,6 +111,23 @@ podman-compose build --no-cache
 podman-compose up -d
 ```
 
+## Installing as an app (PWA)
+
+The app is a Progressive Web App: it can be installed to a phone or tablet home screen and opens full-screen, like a native app. It ships a web manifest (`client/public/manifest.webmanifest`), icons (`client/public/icons/`) and a small service worker (`client/public/sw.js`) that caches the app shell. API requests are never cached.
+
+Browsers only install a PWA and register its service worker over a **trusted** HTTPS certificate. The default self-signed certificate is not enough (iOS and Android both refuse), so for installation on other devices:
+
+1. Enable HTTPS for your tailnet at https://login.tailscale.com/admin/dns (one-time).
+2. Allow your user to request certs: `sudo tailscale set --operator=$USER` (one-time).
+3. Run `./scripts/tailscale-cert.sh`. It fetches a Let's Encrypt cert for the machine's Tailscale name, installs it into the `rewards-data` volume (the app reads `server.cert`/`server.key` from `CERT_DIR`) and restarts the service. The old self-signed pair is kept as `*.selfsigned.bak`.
+4. Re-run it about every 60 days; Tailscale certs last 90.
+5. Open `https://<machine>.<tailnet>.ts.net:3000` (use the full Tailscale name, which the cert covers).
+
+Then install:
+
+- **iPad/iPhone (Safari):** Share → Add to Home Screen.
+- **Android (Chrome):** menu → Install app.
+
 ## Bus Timetable (UK Bus Open Data Service)
 
 The kiosk display can show the next scheduled bus departures for a chosen stop. This
