@@ -113,7 +113,8 @@ jobs:
 
   ui-tests:
     name: UI E2E Tests
-    runs-on: ubuntu-latest
+    # Pinned: Playwright doesn't support chromium on ubuntu 26.04 (ubuntu-latest)
+    runs-on: ubuntu-24.04
     needs: build-scan
     steps:
       - uses: actions/checkout@v6
